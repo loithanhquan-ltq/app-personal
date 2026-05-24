@@ -114,11 +114,42 @@ struct DayCounterFooter: View {
     let days = state.content.daysSinceStart()
     let s = state.content.strings
     VStack(spacing: 6) {
-      if let version = updater.availableVersion {
-        Button { updater.openReleasesPage() } label: {
+      if updater.isUpdating {
+        VStack(alignment: .leading, spacing: 5) {
+          ProgressView(value: updater.updateProgress)
+            .progressViewStyle(.linear)
+            .tint(Theme.accent)
+          Text("Downloading update…")
+            .font(Theme.sans(10.5))
+            .foregroundStyle(Theme.ink3)
+        }
+        .padding(.horizontal, 10).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(Theme.rule, lineWidth: 0.5))
+      } else if let errMsg = updater.updateError {
+        VStack(alignment: .leading, spacing: 5) {
+          Text("Update failed")
+            .font(Theme.sans(11, weight: .semibold))
+            .foregroundStyle(.red.opacity(0.85))
+          Text(errMsg)
+            .font(Theme.sans(10))
+            .foregroundStyle(Theme.ink3)
+            .lineLimit(2)
+          Button("Retry") { updater.downloadAndInstall() }
+            .font(Theme.sans(11, weight: .medium))
+            .foregroundStyle(Theme.accent)
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 10).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(.red.opacity(0.25), lineWidth: 0.5))
+      } else if let version = updater.availableVersion {
+        Button { updater.downloadAndInstall() } label: {
           HStack(spacing: 6) {
             Image(systemName: "arrow.down.circle.fill").font(.system(size: 11))
-            Text("Update available: v\(version)")
+            Text("Update Now  v\(version)")
               .font(Theme.sans(11, weight: .medium))
             Spacer()
           }

@@ -19,12 +19,12 @@ struct MemoriesApp: App {
     Window(state.content.strings.appName, id: "main") {
       RootView()
         .environmentObject(state)
-        .frame(minWidth: 1100, minHeight: 700)
+        .frame(minWidth: 960, minHeight: 640)
         .background(Theme.bg)
         .preferredColorScheme(.light)
     }
     .windowStyle(.titleBar)
-    .windowToolbarStyle(.unified(showsTitle: false))
+    .windowToolbarStyle(.unifiedCompact(showsTitle: false))
     .commands {
       CommandGroup(replacing: .appInfo) {
         Button("About \(state.content.strings.appName)") { }
@@ -53,12 +53,6 @@ struct RootView: View {
       DetailColumn()
     }
     .navigationTitle("")
-    .toolbar {
-      ToolbarItem(placement: .principal) { TitleSegmentedSwitcher() }
-      ToolbarItem(placement: .primaryAction) { LanguageSwitcher() }
-      ToolbarItem(placement: .primaryAction) { SearchField() }
-      ToolbarItem(placement: .primaryAction) { NewMemoryButton() }
-    }
     .background(Theme.bg)
   }
 }
@@ -67,45 +61,56 @@ struct DetailColumn: View {
   @EnvironmentObject var state: AppState
 
   var body: some View {
-    Group {
-      if !state.query.trim().isEmpty {
-        SearchResultsView()
-      } else {
-        switch state.route {
-        case .library:         LibraryView()
-        case .timeline:        TimelineView()
-        case .letters:         LettersView()
-        case .atlas:           AtlasView()
-        case .people:          PeopleView()
-        case .search:          SearchResultsView()
-        case .detail(let id):  DetailView(memoryId: id)
+    VStack(spacing: 0) {
+      TopBar()
+      Divider().overlay(Theme.rule)
+
+      Group {
+        if !state.query.trim().isEmpty {
+          SearchResultsView()
+        } else {
+          switch state.route {
+          case .library:         LibraryView()
+          case .timeline:        TimelineView()
+          case .letters:         LettersView()
+          case .atlas:           AtlasView()
+          case .people:          PeopleView()
+          case .search:          SearchResultsView()
+          case .detail(let id):  DetailView(memoryId: id)
+          }
         }
       }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     .background(Theme.bg)
-    .navigationSubtitle(routeTitle)
-  }
-
-  private var routeTitle: String {
-    let s = state.content.strings
-    if !state.query.trim().isEmpty { return s.searchPlaceholder }
-    switch state.route {
-    case .library:  return s.tabLibrary
-    case .timeline:
-      if let c = state.filterChapter, let ch = state.content.chapter(c) { return ch.label }
-      return s.tabTimeline
-    case .letters:  return s.tabLetters
-    case .atlas:    return s.tabAtlas
-    case .people:   return s.tabPeople
-    case .search:   return s.searchPlaceholder
-    case .detail(let id): return state.content.memory(id)?.title ?? "Memory"
-    }
   }
 }
 
-// ── Toolbar pieces ────────────────────────────────────────
+// ── Top bar ───────────────────────────────────────────────
 
-struct TitleSegmentedSwitcher: View {
+struct TopBar: View {
+  @EnvironmentObject var state: AppState
+
+  var body: some View {
+    HStack(spacing: 12) {
+      NavSwitcher()
+      Spacer(minLength: 16)
+      LanguageSwitcher()
+      Rectangle()
+        .fill(.black.opacity(0.10))
+        .frame(width: 1, height: 16)
+      SearchField()
+      NewMemoryButton()
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical, 9)
+    .background(Theme.bg)
+  }
+}
+
+// ── Nav + Language pieces ─────────────────────────────────
+
+struct NavSwitcher: View {
   @EnvironmentObject var state: AppState
 
   var body: some View {
@@ -118,11 +123,11 @@ struct TitleSegmentedSwitcher: View {
       seg(s.tabPeople,   active: isActive(.people))   { state.clearFilters(); state.route = .people }
     }
     .padding(2)
-    .background(.black.opacity(0.06), in: RoundedRectangle(cornerRadius: 7))
+    .background(.black.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
   }
 
   private func isActive(_ r: AppState.Route) -> Bool {
-    if case .detail = state.route, case .timeline = r { return false }
+    if case .detail = state.route { return false }
     return state.route == r
   }
 
@@ -130,13 +135,15 @@ struct TitleSegmentedSwitcher: View {
   private func seg(_ label: String, active: Bool, action: @escaping () -> Void) -> some View {
     Button(action: action) {
       Text(label)
-        .font(Theme.sans(11.5, weight: .medium))
+        .font(Theme.sans(12, weight: active ? .semibold : .medium))
         .foregroundStyle(active ? Theme.ink : Theme.ink2)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
-        .background(active ? Color(red: 1, green: 0.992, blue: 0.973) : .clear,
-                    in: RoundedRectangle(cornerRadius: 5))
-        .shadow(color: active ? .black.opacity(0.08) : .clear, radius: 1, y: 1)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 5)
+        .background(
+          active ? Color(red: 1, green: 0.992, blue: 0.973) : .clear,
+          in: RoundedRectangle(cornerRadius: 6)
+        )
+        .shadow(color: active ? .black.opacity(0.07) : .clear, radius: 2, y: 1)
     }
     .buttonStyle(.plain)
   }
@@ -151,19 +158,21 @@ struct LanguageSwitcher: View {
         Button { state.setLanguage(l) } label: {
           Text(l.label)
             .font(Theme.sans(11, weight: .semibold))
-            .tracking(0.4)
+            .tracking(0.5)
             .foregroundStyle(state.language == l ? Theme.ink : Theme.ink3)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 4)
-            .background(state.language == l ? Color(red: 1, green: 0.992, blue: 0.973) : .clear,
-                        in: RoundedRectangle(cornerRadius: 5))
-            .shadow(color: state.language == l ? .black.opacity(0.08) : .clear, radius: 1, y: 1)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .background(
+              state.language == l ? Color(red: 1, green: 0.992, blue: 0.973) : .clear,
+              in: RoundedRectangle(cornerRadius: 6)
+            )
+            .shadow(color: state.language == l ? .black.opacity(0.07) : .clear, radius: 2, y: 1)
         }
         .buttonStyle(.plain)
       }
     }
     .padding(2)
-    .background(.black.opacity(0.06), in: RoundedRectangle(cornerRadius: 7))
+    .background(.black.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
   }
 }
 
@@ -179,12 +188,12 @@ struct SearchField: View {
         .textFieldStyle(.plain)
         .font(Theme.sans(12))
         .foregroundStyle(Theme.ink)
-        .frame(width: 160)
+        .frame(width: 148)
     }
     .padding(.horizontal, 10)
-    .padding(.vertical, 4)
-    .background(.black.opacity(0.05), in: RoundedRectangle(cornerRadius: 7))
-    .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(.black.opacity(0.06), lineWidth: 0.5))
+    .padding(.vertical, 5)
+    .background(.black.opacity(0.04), in: RoundedRectangle(cornerRadius: 7))
+    .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(.black.opacity(0.07), lineWidth: 0.5))
   }
 }
 
@@ -197,9 +206,9 @@ struct NewMemoryButton: View {
         Image(systemName: "plus")
           .font(.system(size: 10, weight: .bold))
         Text(state.content.strings.newMemory)
-          .font(Theme.sans(11.5, weight: .semibold))
+          .font(Theme.sans(12, weight: .semibold))
       }
-      .padding(.horizontal, 10)
+      .padding(.horizontal, 11)
       .padding(.vertical, 5)
       .foregroundStyle(.white)
       .background(Theme.accent, in: RoundedRectangle(cornerRadius: 7))
