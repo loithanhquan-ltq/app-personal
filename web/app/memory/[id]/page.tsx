@@ -5,6 +5,7 @@ export function generateStaticParams() {
   return english.memories.map((m) => ({ id: m.id }));
 }
 
-export default function DetailPage({ params }: { params: { id: string } }) {
-  return <MemoryDetailClient id={params.id} />;
+export default async function DetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <MemoryDetailClient id={id} />;
 }
