@@ -20,7 +20,6 @@ export function PhotoSlot({
   const uploadErrors = useAppStore((s) => s.uploadErrors);
   const setPhoto = useAppStore((s) => s.setPhoto);
   const clearPhoto = useAppStore((s) => s.clearPhoto);
-  const githubToken = useAppStore((s) => s.githubToken);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -103,7 +102,7 @@ export function PhotoSlot({
           <span style={{ fontFamily: "var(--font-sans)", fontSize: 11 }}>Upload failed</span>
         </div>
       )}
-      {photoUrl && !githubToken && !isUploading && !uploadError && (
+      {photoUrl && photoUrl.startsWith("blob:") && !isUploading && !uploadError && (
         <div style={badgeStyle}>
           <span>☁</span>
           <span style={{ fontFamily: "var(--font-sans)", fontSize: 11 }}>Not synced</span>
