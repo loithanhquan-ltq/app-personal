@@ -1,197 +1,239 @@
+// LibraryView.swift — landing page: day counter, day-one, anniversaries, chapters, recent.
+
 import SwiftUI
 
 struct LibraryView: View {
-    @Environment(AppState.self) private var state
-    @State private var heartScale: CGFloat = 1.0
+  @EnvironmentObject var state: AppState
 
-    private let days = AppData.daysSinceStart
-    private let favorites = Array(AppData.favorites.prefix(4))
-    private let anniversaries = AppData.anniversaries
-    private let recent = Array(AppData.memories.sorted { $0.sortKey > $1.sortKey }.prefix(3))
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // ── Hero: day counter ──────────────────────────────
-            HStack(alignment: .bottom, spacing: 32) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Since 9 June 2022 · \(AppData.memories.count) memories · written for you")
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(Theme.ink3)
-                        .textCase(.uppercase)
-                        .tracking(1.4)
-
-                    HStack(alignment: .firstTextBaseline, spacing: 0) {
-                        Text("\(days.formatted())")
-                            .font(.custom("Georgia", size: 62).italic())
-                            .foregroundStyle(Theme.accent)
-                            .scaleEffect(heartScale)
-                            .animation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true),
-                                       value: heartScale)
-                        Text(" days,")
-                            .font(.custom("Georgia", size: 62).italic())
-                            .foregroundStyle(Theme.ink)
-                        Text(" and counting.")
-                            .font(.custom("Georgia", size: 62).italic())
-                            .foregroundStyle(Theme.ink3)
-                    }
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-
-                    Text("A little notebook of us — kept here so I don't forget.")
-                        .font(.custom("Georgia", size: 17).italic())
-                        .foregroundStyle(Theme.ink2)
-                }
-
-                Spacer()
-
-                // Years grid
-                HStack(spacing: 8) {
-                    ForEach([2022, 2023, 2024, 2025, 2026], id: \.self) { year in
-                        let n = AppData.memories.filter { $0.year == year }.count
-                        VStack(spacing: 2) {
-                            Text("\(year)")
-                                .font(.system(size: 10, design: .monospaced))
-                                .foregroundStyle(Theme.ink3)
-                            Text("\(n)")
-                                .font(.custom("Georgia", size: 22))
-                                .foregroundStyle(Theme.ink)
-                        }
-                        .padding(.horizontal, 12).padding(.vertical, 10)
-                        .background(Theme.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.rule, lineWidth: 0.5))
-                    }
-                }
-            }
-            .padding(.bottom, 30)
-            .onAppear { heartScale = 1.04 }
-
-            // ── Where it began ─────────────────────────────────
-            SectionBlock(title: "Where it began", subtitle: "9 June 2022") {
-                if let dayOne = AppData.memory(id: "m01") {
-                    Button { state.openMemory(dayOne.id) } label: {
-                        HStack(spacing: 28) {
-                            ImageSlotView(slotId: "hero-m01",
-                                         placeholder: "A photo from 9 June 2022",
-                                         radius: 10)
-                            .frame(width: 320, height: 220)
-
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text("Day 1 · \(dayOne.date)")
-                                    .font(.system(size: 10.5, design: .monospaced))
-                                    .foregroundStyle(Theme.ink3)
-                                    .textCase(.uppercase).tracking(1.2)
-                                Text(dayOne.title)
-                                    .font(.custom("Georgia", size: 30).italic())
-                                    .foregroundStyle(Theme.ink)
-                                    .padding(.top, 8).padding(.bottom, 12)
-                                Text(dayOne.body)
-                                    .font(.custom("Georgia", size: 16))
-                                    .foregroundStyle(Theme.ink2)
-                                    .lineSpacing(5)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .padding(22)
-                        .background(Theme.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.rule, lineWidth: 0.5))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-
-            // ── Every June 9 ───────────────────────────────────
-            SectionBlock(title: "Every June 9", subtitle: "The anniversaries") {
-                HStack(spacing: 12) {
-                    ForEach(Array(anniversaries.enumerated()), id: \.element.id) { i, m in
-                        Button { state.openMemory(m.id) } label: {
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text("YEAR \(i)")
-                                    .font(.system(size: 10, design: .monospaced))
-                                    .foregroundStyle(Color.black.opacity(0.45))
-                                    .tracking(1)
-                                Spacer()
-                                Text(m.title)
-                                    .font(.custom("Georgia", size: 20).italic())
-                                    .foregroundStyle(Theme.ink)
-                                    .lineLimit(2)
-                                Text(m.date)
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(Theme.ink2)
-                                    .padding(.top, 6)
-                            }
-                            .padding(18)
-                            .frame(maxWidth: .infinity, minHeight: 130, alignment: .topLeading)
-                            .background(
-                                LinearGradient(
-                                    colors: [
-                                        Color(hue: (354 - Double(i) * 8) / 360, saturation: 0.28, brightness: 0.94),
-                                        Color(hue: (340 - Double(i) * 12) / 360, saturation: 0.40, brightness: 0.88),
-                                    ],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing
-                                )
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black.opacity(0.06), lineWidth: 0.5))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-
-            // ── Favorites ──────────────────────────────────────
-            SectionBlock(title: "Favorites", subtitle: "The ones you keep coming back to") {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 14), count: 4), spacing: 14) {
-                    ForEach(favorites) { m in
-                        MemoryCardTile(memory: m) { state.openMemory(m.id) }
-                    }
-                }
-            }
-
-            // ── Chapters ───────────────────────────────────────
-            SectionBlock(title: "Chapters", subtitle: "Browse by season") {
-                HStack(spacing: 10) {
-                    ForEach(AppData.chapters) { c in
-                        Button { state.navigate(to: .chapter(c.id)) } label: {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(c.span.uppercased())
-                                    .font(.system(size: 10, design: .monospaced))
-                                    .foregroundStyle(Color.black.opacity(0.45))
-                                    .tracking(0.8)
-                                Text(c.label)
-                                    .font(.custom("Georgia", size: 20).italic())
-                                    .foregroundStyle(Theme.ink)
-                                let n = AppData.memories(forChapter: c.id).count
-                                Text("\(n) \(n == 1 ? "memory" : "memories")")
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(Theme.ink3)
-                            }
-                            .padding(16)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Theme.chapterFill(hue: c.hue))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Theme.chapterDot(hue: c.hue).opacity(0.4), lineWidth: 0.5)
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-
-            // ── Recently added ─────────────────────────────────
-            SectionBlock(title: "Recently added") {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 14), count: 3), spacing: 14) {
-                    ForEach(recent) { m in
-                        MemoryCardTile(memory: m) { state.openMemory(m.id) }
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, 36)
-        .padding(.top, 20)
-        .padding(.bottom, 60)
+  var body: some View {
+    let s = state.content.strings
+    let days = state.content.daysSinceStart()
+    let dayOne = state.content.memory("m01")!
+    let favs = state.content.memories.filter(\.favorite)
+    let anniv = state.content.memories
+      .filter { ["m01", "m10", "m14", "m17"].contains($0.id) }
+    let recent = state.content.memories.sorted { $0.sortKey > $1.sortKey }.prefix(3)
+    let yearCounts: [(Int, Int)] = Array(2022...2026).map { y in
+      (y, state.content.memories.filter { $0.year == y }.count)
     }
+
+    ScrollView {
+      VStack(alignment: .leading, spacing: 36) {
+        // Hero
+        HStack(alignment: .bottom, spacing: 32) {
+          VStack(alignment: .leading, spacing: 8) {
+            Text(s.libraryEyebrow(state.content.memories.count).uppercased())
+              .font(Theme.mono(11, weight: .medium))
+              .tracking(1.4)
+              .foregroundStyle(Theme.ink3)
+            (Text(formatNumber(days, locale: state.language.locale))
+              .font(Theme.serif(64, italic: true))
+              .foregroundColor(Theme.accent)
+            + Text(" " + s.libraryHeadlineA)
+              .font(Theme.serif(64, italic: true))
+              .foregroundColor(Theme.ink)
+            + Text(s.libraryHeadlineB)
+              .font(Theme.serif(64, italic: true))
+              .foregroundColor(Theme.ink3))
+              .lineSpacing(-12)
+              .tracking(-2)
+            Text(s.librarySubtitle)
+              .font(Theme.serif(17, italic: true))
+              .foregroundStyle(Theme.ink2)
+          }
+          Spacer(minLength: 0)
+          HStack(spacing: 8) {
+            ForEach(yearCounts, id: \.0) { (y, n) in
+              VStack(spacing: 2) {
+                Text("\(y)")
+                  .font(Theme.mono(10.5))
+                  .foregroundStyle(Theme.ink3)
+                Text("\(n)")
+                  .font(Theme.serif(22, weight: .medium))
+                  .foregroundStyle(Theme.ink)
+              }
+              .padding(.horizontal, 12)
+              .padding(.vertical, 8)
+              .frame(minWidth: 56)
+              .background(Theme.card, in: RoundedRectangle(cornerRadius: 10))
+              .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.rule, lineWidth: 0.5))
+            }
+          }
+        }
+        .padding(.top, 6)
+
+        // Where it began
+        SectionHeader(s.sectionWhereItBegan, subtitle: dayOne.date)
+        Button { state.open(dayOne.id) } label: {
+          HStack(alignment: .center, spacing: 28) {
+            PhotoSlot(id: "hero-\(dayOne.id)", placeholder: "photo · \(dayOne.date)",
+                      cornerRadius: 10, height: 260)
+              .frame(maxWidth: .infinity)
+            VStack(alignment: .leading, spacing: 12) {
+              Text("\(s.dayOnePrefix) · \(dayOne.date)".uppercased())
+                .font(Theme.mono(10.5, weight: .medium))
+                .tracking(1.2)
+                .foregroundStyle(Theme.ink3)
+              Text(dayOne.title)
+                .font(Theme.serif(32, italic: true, weight: .medium))
+                .foregroundStyle(Theme.ink)
+                .multilineTextAlignment(.leading)
+              Text(dayOne.body)
+                .font(Theme.serif(16))
+                .foregroundStyle(Theme.ink2)
+                .lineSpacing(4)
+                .multilineTextAlignment(.leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+          }
+          .padding(22)
+          .background(Theme.card, in: RoundedRectangle(cornerRadius: 16))
+          .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.rule, lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
+
+        // Anniversaries
+        SectionHeader(s.sectionAnniversaries, subtitle: s.sectionAnniversariesSub)
+        HStack(spacing: 12) {
+          ForEach(Array(anniv.enumerated()), id: \.1.id) { (i, m) in
+            Button { state.open(m.id) } label: {
+              VStack(alignment: .leading, spacing: 0) {
+                Text("\(s.yearLabel) \(i)")
+                  .font(Theme.mono(10.5, weight: .medium))
+                  .tracking(1)
+                  .foregroundStyle(.black.opacity(0.55))
+                Spacer(minLength: 8)
+                VStack(alignment: .leading, spacing: 6) {
+                  Text(m.title)
+                    .font(Theme.serif(22, italic: true, weight: .medium))
+                    .foregroundStyle(Theme.ink)
+                    .multilineTextAlignment(.leading)
+                  Text(m.date)
+                    .font(Theme.sans(11))
+                    .foregroundStyle(Theme.ink2)
+                }
+              }
+              .padding(18)
+              .frame(maxWidth: .infinity, minHeight: 130, alignment: .topLeading)
+              .background(
+                LinearGradient(colors: [
+                  Color(hue: max(0, (354.0 - Double(i) * 8) / 360), saturation: 0.18, brightness: 0.94),
+                  Color(hue: max(0, (340.0 - Double(i) * 12) / 360), saturation: 0.24, brightness: 0.88)
+                ], startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: 12))
+              .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.black.opacity(0.06), lineWidth: 0.5))
+            }
+            .buttonStyle(.plain)
+          }
+        }
+
+        // Chapters strip
+        SectionHeader(s.sectionChaptersTitle, subtitle: s.sectionChaptersSub)
+        HStack(spacing: 10) {
+          ForEach(state.content.chapters) { c in
+            let count = state.content.memories.filter { $0.chapterId == c.id }.count
+            Button { state.openChapter(c.id) } label: {
+              VStack(alignment: .leading, spacing: 4) {
+                Text(c.span.uppercased())
+                  .font(Theme.mono(10, weight: .medium))
+                  .tracking(0.8)
+                  .foregroundStyle(.black.opacity(0.55))
+                Text(c.label)
+                  .font(Theme.serif(22, italic: true, weight: .medium))
+                  .foregroundStyle(Theme.ink)
+                Text(s.memoriesCount(count))
+                  .font(Theme.sans(11))
+                  .foregroundStyle(Theme.ink3)
+              }
+              .padding(16)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .background(
+                LinearGradient(colors: [
+                  Color(hue: c.hue / 360, saturation: 0.18, brightness: 0.94),
+                  Color(hue: c.hue / 360, saturation: 0.26, brightness: 0.88)
+                ], startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: 12))
+              .overlay(RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color(hue: c.hue / 360, saturation: 0.30, brightness: 0.78).opacity(0.4),
+                               lineWidth: 0.5))
+            }
+            .buttonStyle(.plain)
+          }
+        }
+
+        // Favorites
+        SectionHeader(s.sectionFavorites, subtitle: s.sectionFavoritesSub)
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14),
+                            GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)],
+                  spacing: 14) {
+          ForEach(favs.prefix(4)) { m in MemoryTile(memory: m) }
+        }
+
+        // Recently added
+        SectionHeader(s.sectionRecent, subtitle: nil)
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14),
+                            GridItem(.flexible(), spacing: 14)],
+                  spacing: 14) {
+          ForEach(Array(recent)) { m in MemoryTile(memory: m) }
+        }
+
+        Spacer(minLength: 60)
+      }
+      .padding(.horizontal, 36)
+      .padding(.top, 14)
+      .frame(maxWidth: 1100)
+      .frame(maxWidth: .infinity, alignment: .center)
+    }
+  }
+}
+
+struct SectionHeader: View {
+  let title: String
+  let subtitle: String?
+  init(_ title: String, subtitle: String? = nil) { self.title = title; self.subtitle = subtitle }
+  var body: some View {
+    HStack(alignment: .lastTextBaseline, spacing: 12) {
+      Text(title)
+        .font(Theme.serif(22, weight: .medium))
+        .foregroundStyle(Theme.ink)
+      if let subtitle {
+        Text(subtitle)
+          .font(Theme.sans(12))
+          .foregroundStyle(Theme.ink3)
+      }
+      Spacer()
+    }
+  }
+}
+
+struct MemoryTile: View {
+  let memory: Memory
+  @EnvironmentObject var state: AppState
+
+  var body: some View {
+    Button { state.open(memory.id) } label: {
+      VStack(alignment: .leading, spacing: 0) {
+        PhotoSlot(id: "tile-\(memory.id)", placeholder: "photo · \(memory.date)",
+                  cornerRadius: 6, height: 130)
+        VStack(alignment: .leading, spacing: 4) {
+          Text(memory.title)
+            .font(Theme.serif(16, weight: .medium))
+            .foregroundStyle(Theme.ink)
+            .lineLimit(2)
+            .multilineTextAlignment(.leading)
+          Text("\(memory.date) · \(state.content.place(memory.placeId)?.label ?? "")")
+            .font(Theme.sans(11))
+            .foregroundStyle(Theme.ink3)
+            .lineLimit(1)
+        }
+        .padding(.top, 10)
+        .padding(.horizontal, 4)
+        .padding(.bottom, 2)
+      }
+      .padding(10)
+      .background(Theme.card, in: RoundedRectangle(cornerRadius: 10))
+      .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.rule, lineWidth: 0.5))
+    }
+    .buttonStyle(.plain)
+  }
 }

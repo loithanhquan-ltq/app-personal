@@ -1,213 +1,226 @@
+// DetailView.swift — single memory article.
+
 import SwiftUI
 
 struct DetailView: View {
-    let memoryId: String
-    @Environment(AppState.self) private var state
+  let memoryId: String
+  @EnvironmentObject var state: AppState
 
-    private var memory: Memory? { AppData.memory(id: memoryId) }
-    private var place:   Place?   { memory.flatMap { AppData.place(id: $0.place) } }
-    private var chapter: Chapter? { memory.flatMap { AppData.chapter(id: $0.chapter) } }
-    private var people:  [Person] { memory?.people.compactMap { AppData.person(id: $0) } ?? [] }
-
-    private var related: [Memory] {
-        guard let m = memory else { return [] }
-        return AppData.memories.filter { $0.chapter == m.chapter && $0.id != m.id }.prefix(3).map { $0 }
+  var body: some View {
+    let s = state.content.strings
+    guard let m = state.content.memory(memoryId) else {
+      return AnyView(Text("Not found"))
     }
+    let place = state.content.place(m.placeId)
+    let chapter = state.content.chapter(m.chapterId)
+    let people = m.peopleIds.compactMap { state.content.person($0) }
+    let idx = state.content.memories.firstIndex { $0.id == m.id } ?? 0
+    let prev = idx > 0 ? state.content.memories[idx - 1] : nil
+    let next = idx < state.content.memories.count - 1 ? state.content.memories[idx + 1] : nil
+    let related = state.content.memories.filter { $0.chapterId == m.chapterId && $0.id != m.id }.prefix(3)
 
-    private var prevMemory: Memory? {
-        guard let m = memory,
-              let idx = AppData.memories.firstIndex(where: { $0.id == m.id }),
-              idx > 0 else { return nil }
-        return AppData.memories[idx - 1]
-    }
-
-    private var nextMemory: Memory? {
-        guard let m = memory,
-              let idx = AppData.memories.firstIndex(where: { $0.id == m.id }),
-              idx < AppData.memories.count - 1 else { return nil }
-        return AppData.memories[idx + 1]
-    }
-
-    var body: some View {
-        guard let m = memory else { return AnyView(EmptyView()) }
-        return AnyView(
-            VStack(alignment: .leading, spacing: 0) {
-                // Back bar
-                HStack(spacing: 6) {
-                    Button { state.goBack() } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left").font(.system(size: 12, weight: .medium))
-                            Text("Back")
-                        }
-                        .foregroundStyle(Theme.accent)
-                        .font(.system(size: 13))
-                    }
-                    .buttonStyle(.plain)
-                    Spacer()
-                    Button { } label: {
-                        Image(systemName: m.favorite ? "heart.fill" : "heart")
-                            .foregroundStyle(m.favorite ? Theme.accent : Theme.ink3)
-                    }
-                    .buttonStyle(.plain)
-                    Button { } label: { Image(systemName: "square.and.arrow.up").foregroundStyle(Theme.ink3) }
-                        .buttonStyle(.plain)
-                    Button { } label: { Image(systemName: "pencil").foregroundStyle(Theme.ink3) }
-                        .buttonStyle(.plain)
-                }
-                .padding(.horizontal, 24).padding(.top, 6).padding(.bottom, 14)
-
-                // Hero image slot
-                ImageSlotView(
-                    slotId: "hero-\(m.id)",
-                    placeholder: "A photo from \(m.date)\u{A0}·\u{A0}\(place?.label ?? "")",
-                    radius: 14
-                )
-                .frame(maxWidth: .infinity)
-                .frame(height: 360)
-                .padding(.horizontal, 36)
-
-                // Article
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("\(m.date) · \(place?.label ?? ""), \(place?.country ?? "")")
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(Theme.ink3)
-                        .textCase(.uppercase).tracking(1.4)
-                        .padding(.bottom, 10)
-
-                    Text(m.title)
-                        .font(.custom("Georgia", size: 48).italic())
-                        .foregroundStyle(Theme.ink)
-                        .tracking(-1.4)
-                        .lineSpacing(4)
-                        .padding(.bottom, 22)
-
-                    Text(m.body)
-                        .font(.custom("Georgia", size: 19))
-                        .foregroundStyle(Theme.ink)
-                        .lineSpacing(8)
-
-                    // Metadata strip
-                    HStack(alignment: .top, spacing: 0) {
-                        MetaBlock(label: "Chapter") {
-                            if let ch = chapter { ChipView(text: ch.label, accent: true) }
-                        }
-                        MetaBlock(label: "Place") {
-                            HStack(spacing: 4) {
-                                Text(place?.label ?? "").font(.custom("Georgia", size: 15)).foregroundStyle(Theme.ink)
-                                Text(place?.country ?? "").font(.system(size: 11)).foregroundStyle(Theme.ink3)
-                            }
-                        }
-                        MetaBlock(label: "Tags") {
-                            HStack(spacing: 5) {
-                                ForEach(m.tags, id: \.self) { ChipView(text: $0) }
-                            }
-                        }
-                    }
-                    .padding(.vertical, 20)
-                    .overlay(alignment: .top)    { Divider().background(Theme.rule) }
-                    .overlay(alignment: .bottom) { Divider().background(Theme.rule) }
-                    .padding(.top, 36)
-
-                    // People
-                    if !people.isEmpty {
-                        Text("With".uppercased())
-                            .font(.system(size: 11, design: .monospaced))
-                            .foregroundStyle(Theme.ink3).tracking(1.4)
-                            .padding(.top, 26).padding(.bottom, 12)
-
-                        HStack(spacing: 14) {
-                            ForEach(Array(people.enumerated()), id: \.element.id) { i, p in
-                                HStack(spacing: 9) {
-                                    AvatarView(initials: p.initials,
-                                               hue: Double((AppData.people.firstIndex(where: { $0.id == p.id }) ?? 0) * 53 + 20),
-                                               size: 36)
-                                    VStack(alignment: .leading, spacing: 1) {
-                                        Text(p.name).font(.custom("Georgia", size: 15)).foregroundStyle(Theme.ink)
-                                        Text(p.role.uppercased()).font(.system(size: 10.5)).foregroundStyle(Theme.ink3).tracking(0.8)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .frame(maxWidth: 720)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 24)
-                .padding(.top, 32)
-
-                // Related
-                if !related.isEmpty {
-                    VStack(alignment: .leading, spacing: 14) {
-                        Text("More from \(chapter?.label ?? "")")
-                            .font(.custom("Georgia", size: 22))
-                            .foregroundStyle(Theme.ink).tracking(-0.2)
-
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 14), count: 3), spacing: 14) {
-                            ForEach(related) { r in
-                                MemoryCardTile(memory: r) { state.openMemory(r.id) }
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 48)
-                }
-
-                // Prev / Next
-                HStack(spacing: 14) {
-                    NavCard(label: "Earlier", memory: prevMemory) { state.openMemory($0) }
-                    NavCard(label: "Later",   memory: nextMemory) { state.openMemory($0) }
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 36)
-                .padding(.bottom, 80)
-            }
-        )
-    }
-}
-
-private struct MetaBlock<Content: View>: View {
-    let label: String
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(label.uppercased())
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundStyle(Theme.ink3).tracking(1.2)
-            content()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-private struct NavCard: View {
-    let label: String
-    let memory: Memory?
-    let onTap: (String) -> Void
-
-    var body: some View {
-        if let m = memory {
-            Button { onTap(m.id) } label: {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("← \(label)".uppercased())
-                        .font(.system(size: 10.5, design: .monospaced))
-                        .foregroundStyle(Theme.ink3).tracking(1.2)
-                    Text(m.title)
-                        .font(.custom("Georgia", size: 18))
-                        .foregroundStyle(Theme.ink).tracking(-0.2)
-                    Text(m.date)
-                        .font(.system(size: 11))
-                        .foregroundStyle(Theme.ink3)
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.card)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.rule, lineWidth: 0.5))
+    return AnyView(
+      ScrollView {
+        VStack(alignment: .leading, spacing: 0) {
+          // Back bar
+          HStack {
+            Button { state.route = .timeline } label: {
+              HStack(spacing: 4) {
+                Image(systemName: "chevron.left").font(.system(size: 11, weight: .semibold))
+                Text(s.back).font(Theme.sans(13))
+              }
+              .foregroundStyle(Theme.accent)
+              .padding(.horizontal, 6).padding(.vertical, 4)
             }
             .buttonStyle(.plain)
-        } else {
-            Color.clear.frame(maxWidth: .infinity)
+            Spacer()
+            iconBtn("heart\(m.favorite ? ".fill" : "")", accent: m.favorite)
+            iconBtn("square.and.arrow.up")
+            iconBtn("pencil")
+          }
+          .padding(.horizontal, 24)
+          .padding(.bottom, 14)
+
+          // Hero
+          PhotoSlot(id: "hero-\(m.id)",
+                    placeholder: "photo · \(m.date) · \(place?.label ?? "")",
+                    cornerRadius: 14, height: 360)
+            .padding(.horizontal, 36)
+
+          // Article body
+          VStack(alignment: .leading, spacing: 22) {
+            Text("\(m.date) · \(place?.label ?? ""), \(place?.country ?? "")".uppercased())
+              .font(Theme.mono(11, weight: .medium))
+              .tracking(1.4)
+              .foregroundStyle(Theme.ink3)
+              .padding(.top, 32)
+            Text(m.title)
+              .font(Theme.serif(52, italic: true, weight: .medium))
+              .foregroundStyle(Theme.ink)
+              .tracking(-1.4)
+              .multilineTextAlignment(.leading)
+            Text(m.body)
+              .font(Theme.serif(19))
+              .foregroundStyle(Theme.ink)
+              .lineSpacing(8)
+              .multilineTextAlignment(.leading)
+
+            // Metadata band
+            HStack(alignment: .top, spacing: 24) {
+              meta(s.metaChapter) {
+                if let chapter { ChipView(chapter.label, accent: true) }
+              }
+              meta(s.metaPlace) {
+                HStack(spacing: 6) {
+                  Text(place?.label ?? "").font(Theme.serif(15)).foregroundStyle(Theme.ink)
+                  Text(place?.country ?? "").font(Theme.sans(11)).foregroundStyle(Theme.ink3)
+                }
+              }
+              meta(s.metaTags) {
+                HStack(spacing: 5) {
+                  ForEach(m.tags, id: \.self) { ChipView($0) }
+                }
+              }
+            }
+            .padding(.vertical, 20)
+            .overlay(Rectangle().fill(Theme.rule).frame(height: 0.5), alignment: .top)
+            .overlay(Rectangle().fill(Theme.rule).frame(height: 0.5), alignment: .bottom)
+
+            // With (people)
+            if !people.isEmpty {
+              VStack(alignment: .leading, spacing: 12) {
+                Text(s.withPeople.uppercased())
+                  .font(Theme.mono(11, weight: .medium))
+                  .tracking(1.4)
+                  .foregroundStyle(Theme.ink3)
+                HStack(alignment: .center, spacing: 14) {
+                  ForEach(people) { p in
+                    HStack(spacing: 9) {
+                      Avatar(initials: p.initials, hue: avatarHue(p))
+                        .frame(width: 36, height: 36)
+                      VStack(alignment: .leading, spacing: 2) {
+                        Text(p.name).font(Theme.serif(15)).foregroundStyle(Theme.ink)
+                        Text(p.role.uppercased())
+                          .font(Theme.sans(10.5, weight: .medium))
+                          .tracking(0.8)
+                          .foregroundStyle(Theme.ink3)
+                      }
+                    }
+                  }
+                  Spacer()
+                }
+              }
+              .padding(.top, 6)
+            }
+          }
+          .padding(.horizontal, 24)
+          .frame(maxWidth: 720)
+          .frame(maxWidth: .infinity, alignment: .center)
+
+          // Related
+          VStack(alignment: .leading, spacing: 14) {
+            Text("\(s.moreFrom) \(chapter?.label ?? "")")
+              .font(Theme.serif(22, weight: .medium))
+              .foregroundStyle(Theme.ink)
+              .tracking(-0.2)
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 14),
+                                GridItem(.flexible(), spacing: 14),
+                                GridItem(.flexible(), spacing: 14)], spacing: 14) {
+              ForEach(Array(related)) { r in MemoryTile(memory: r) }
+            }
+          }
+          .padding(.horizontal, 24)
+          .padding(.top, 48)
+          .frame(maxWidth: 940)
+          .frame(maxWidth: .infinity, alignment: .center)
+
+          // Prev / Next
+          HStack(spacing: 14) {
+            navCard(label: s.earlier, memory: prev, align: .leading)
+            navCard(label: s.later,   memory: next, align: .trailing)
+          }
+          .padding(.horizontal, 24)
+          .padding(.top, 36)
+          .frame(maxWidth: 940)
+          .frame(maxWidth: .infinity, alignment: .center)
+
+          Spacer(minLength: 80)
         }
+        .padding(.top, 6)
+      }
+    )
+  }
+
+  @ViewBuilder
+  private func iconBtn(_ name: String, accent: Bool = false) -> some View {
+    Image(systemName: name)
+      .font(.system(size: 14, weight: .medium))
+      .foregroundStyle(accent ? Theme.accent : Theme.ink2)
+      .frame(width: 30, height: 30)
+      .contentShape(Rectangle())
+  }
+
+  @ViewBuilder
+  private func meta(_ label: String, @ViewBuilder _ content: () -> some View) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Text(label.uppercased())
+        .font(Theme.mono(10, weight: .medium))
+        .tracking(1.2)
+        .foregroundStyle(Theme.ink3)
+      content()
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+
+  @ViewBuilder
+  private func navCard(label: String, memory: Memory?, align: HorizontalAlignment) -> some View {
+    if let m = memory {
+      Button { state.open(m.id) } label: {
+        VStack(alignment: align, spacing: 6) {
+          Text("← \(label)".uppercased())
+            .font(Theme.mono(10.5, weight: .medium))
+            .tracking(1.2)
+            .foregroundStyle(Theme.ink3)
+          Text(m.title)
+            .font(Theme.serif(18, weight: .medium))
+            .foregroundStyle(Theme.ink)
+            .multilineTextAlignment(align == .leading ? .leading : .trailing)
+          Text(m.date)
+            .font(Theme.sans(11))
+            .foregroundStyle(Theme.ink3)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: align == .leading ? .leading : .trailing)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.rule, lineWidth: 0.5))
+      }
+      .buttonStyle(.plain)
+    } else {
+      Color.clear.frame(maxWidth: .infinity)
+    }
+  }
+
+  private func avatarHue(_ p: Person) -> Double {
+    let idx = state.content.people.firstIndex(where: { $0.id == p.id }) ?? 0
+    return Double((idx * 53 + 20) % 360)
+  }
+}
+
+struct Avatar: View {
+  let initials: String
+  let hue: Double
+  var body: some View {
+    Circle()
+      .fill(
+        LinearGradient(colors: [
+          Color(hue: hue / 360, saturation: 0.18, brightness: 0.85),
+          Color(hue: ((hue + 40).truncatingRemainder(dividingBy: 360)) / 360,
+                saturation: 0.22, brightness: 0.72)
+        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+      )
+      .overlay(Text(initials)
+        .font(Theme.sans(12, weight: .semibold))
+        .foregroundStyle(.black.opacity(0.65)))
+      .overlay(Circle().strokeBorder(.black.opacity(0.1), lineWidth: 0.5))
+  }
 }

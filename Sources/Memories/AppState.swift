@@ -1,49 +1,100 @@
-import SwiftUI
-import Observation
+// AppState.swift — observable model, language, navigation, photo storage.
 
-enum SidebarItem: Hashable {
+import SwiftUI
+import AppKit
+
+@MainActor
+final class AppState: ObservableObject {
+  @AppStorage("memories.lang") private var rawLang: String = "en"
+
+  @Published var content: Content
+  @Published var route: Route = .library
+  @Published var query: String = ""
+  @Published var filterChapter: String? = nil
+  @Published var photos: [String: URL] = [:]
+
+  enum Route: Hashable {
     case library
-    case allMemories
+    case timeline
     case letters
-    case favorites
-    case chapter(String)
     case atlas
     case people
-}
+    case search
+    case detail(String)
+  }
 
-@Observable
-class AppState {
-    var sidebarSelection: SidebarItem? = .library
-    var detailMemoryId: String? = nil
-    var searchQuery: String = ""
+  init() {
+    let l = Language(rawValue: UserDefaults.standard.string(forKey: "memories.lang") ?? "en") ?? .en
+    self.content = Datasets.content(for: l)
+    loadPhotos()
+  }
 
-    var toolbarTitle: String {
-        if !searchQuery.isEmpty { return "Search" }
-        if let mid = detailMemoryId, let m = AppData.memory(id: mid) { return m.title }
-        switch sidebarSelection {
-        case .library:          return "Us"
-        case .allMemories:      return "All memories"
-        case .letters:          return "Letters"
-        case .favorites:        return "Favorites"
-        case .chapter(let id):  return AppData.chapter(id: id)?.label ?? "Chapter"
-        case .atlas:            return "Atlas"
-        case .people:           return "People"
-        case nil:               return "Memories"
-        }
+  var language: Language { content.lang }
+
+  func setLanguage(_ l: Language) {
+    rawLang = l.rawValue
+    content = Datasets.content(for: l)
+  }
+
+  func open(_ memoryId: String) {
+    route = .detail(memoryId)
+  }
+
+  func openChapter(_ id: String) {
+    filterChapter = id
+    route = .timeline
+  }
+
+  func clearFilters() {
+    filterChapter = nil
+    query = ""
+  }
+
+  // ── Photo store ──────────────────────────────────────────
+  private var photoDir: URL {
+    let fm = FileManager.default
+    let support = try! fm.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+    let dir = support.appendingPathComponent("Memories/Photos", isDirectory: true)
+    try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
+    return dir
+  }
+
+  private var photoIndex: URL { photoDir.appendingPathComponent("index.json") }
+
+  private func loadPhotos() {
+    guard let data = try? Data(contentsOf: photoIndex),
+          let dict = try? JSONDecoder().decode([String: String].self, from: data) else { return }
+    photos = dict.compactMapValues { name in
+      let url = photoDir.appendingPathComponent(name)
+      return FileManager.default.fileExists(atPath: url.path) ? url : nil
     }
+  }
 
-    func openMemory(_ id: String) {
-        detailMemoryId = id
-        searchQuery = ""
+  private func savePhotos() {
+    let dict = photos.compactMapValues { $0.lastPathComponent }
+    if let data = try? JSONEncoder().encode(dict) {
+      try? data.write(to: photoIndex)
     }
+  }
 
-    func goBack() {
-        detailMemoryId = nil
+  func setPhoto(_ id: String, source: URL) {
+    let ext = source.pathExtension.isEmpty ? "jpg" : source.pathExtension
+    let dest = photoDir.appendingPathComponent("\(id).\(ext)")
+    try? FileManager.default.removeItem(at: dest)
+    do {
+      try FileManager.default.copyItem(at: source, to: dest)
+      photos[id] = dest
+      savePhotos()
+    } catch {
+      NSLog("setPhoto failed: \(error)")
     }
+  }
 
-    func navigate(to item: SidebarItem) {
-        sidebarSelection = item
-        detailMemoryId = nil
-        searchQuery = ""
+  func clearPhoto(_ id: String) {
+    if let url = photos[id] {
+      try? FileManager.default.removeItem(at: url)
     }
+    photos.removeValue(forKey: id)
+    savePhotos()
+  }
 }

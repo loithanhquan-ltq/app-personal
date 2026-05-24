@@ -1,38 +1,50 @@
+// SearchView.swift — live filter results.
+
 import SwiftUI
 
-struct SearchView: View {
-    @Environment(AppState.self) private var state
+struct SearchResultsView: View {
+  @EnvironmentObject var state: AppState
 
-    private var hits: [Memory] {
-        AppData.search(state.searchQuery)
+  var body: some View {
+    let s = state.content.strings
+    let q = state.query.lowercased().trim()
+    let hits: [Memory] = state.content.memories.filter { m in
+      if q == "favorite" { return m.favorite }
+      return m.title.lowercased().contains(q)
+        || m.body.lowercased().contains(q)
+        || m.tags.contains(where: { $0.contains(q) })
+        || (state.content.place(m.placeId)?.label.lowercased().contains(q) ?? false)
     }
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(hits.count) \(hits.count == 1 ? "result" : "results")".uppercased())
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundStyle(Theme.ink3).tracking(1.4)
-                (Text("Results for ") + Text("\"\(state.searchQuery)\"").italic().foregroundStyle(Theme.accent))
-                    .font(.custom("Georgia", size: 36))
-                    .foregroundStyle(Theme.ink).tracking(-0.6)
-            }
-            .padding(.bottom, 14)
-
-            if hits.isEmpty {
-                Text("Nothing yet. Try a year, a place, or a person.")
-                    .font(.custom("Georgia", size: 16).italic())
-                    .foregroundStyle(Theme.ink3)
-                    .padding(.top, 40)
-            } else {
-                ForEach(hits) { m in
-                    MemoryCardWide(memory: m) { state.openMemory(m.id) }
-                    Divider().background(Theme.rule).padding(.horizontal, 16)
-                }
-            }
+    ScrollView {
+      VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 8) {
+          Text(s.searchResults(hits.count).uppercased())
+            .font(Theme.mono(11, weight: .medium))
+            .tracking(1.4)
+            .foregroundStyle(Theme.ink3)
+          Text(s.searchResultsFor(state.query.trim()))
+            .font(Theme.serif(36, weight: .regular))
+            .foregroundStyle(Theme.ink)
+            .tracking(-0.6)
         }
-        .padding(.horizontal, 36)
-        .padding(.top, 18)
-        .padding(.bottom, 80)
+        .padding(.top, 6)
+        .padding(.bottom, 14)
+
+        if hits.isEmpty {
+          Text(s.searchEmpty)
+            .font(Theme.serif(15, italic: true))
+            .foregroundStyle(Theme.ink3)
+            .padding(40)
+        } else {
+          ForEach(hits) { m in MemoryWideCard(memory: m) }
+        }
+        Spacer(minLength: 80)
+      }
+      .padding(.horizontal, 36)
+      .padding(.top, 14)
+      .frame(maxWidth: 1000)
+      .frame(maxWidth: .infinity, alignment: .center)
     }
+  }
 }

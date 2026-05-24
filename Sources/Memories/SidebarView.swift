@@ -1,122 +1,164 @@
+// SidebarView.swift — left nav: library / chapters / atlas / people + day counter.
+
 import SwiftUI
 
-struct SidebarView: View {
-    @Environment(AppState.self) private var state
+struct Sidebar: View {
+  @EnvironmentObject var state: AppState
 
-    var body: some View {
-        @Bindable var st = state
-        List(selection: $st.sidebarSelection) {
-            Section("Library") {
-                SideLabel("All memories", icon: "book.closed", count: AppData.memories.count)
-                    .tag(SidebarItem.allMemories)
-                SideLabel("Today", icon: "sparkles")
-                    .tag(SidebarItem.library)
-                SideLabel("Letters", icon: "pencil", count: AppData.letters.count)
-                    .tag(SidebarItem.letters)
-                SideLabel("Favorites", icon: "heart", count: AppData.favorites.count)
-                    .tag(SidebarItem.favorites)
-            }
-
-            Section("Chapters") {
-                ForEach(AppData.chapters) { chapter in
-                    HStack(spacing: 8) {
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(Theme.chapterDot(hue: chapter.hue))
-                            .frame(width: 9, height: 9)
-                        Text(chapter.label)
-                        Spacer()
-                        Text("\(AppData.memories(forChapter: chapter.id).count)")
-                            .font(.system(size: 11)).foregroundStyle(Theme.ink3)
-                    }
-                    .tag(SidebarItem.chapter(chapter.id))
-                }
-            }
-
-            Section("Atlas") {
-                SideLabel("Places we've been", icon: "map")
-                    .tag(SidebarItem.atlas)
-            }
-
-            Section("People") {
-                SideLabel("You & the cast", icon: "person.2")
-                    .tag(SidebarItem.people)
-            }
+  var body: some View {
+    let s = state.content.strings
+    List {
+      Section(s.sectionLibrary) {
+        sideItem(s.sideAll, systemImage: "book.closed", count: state.content.memories.count,
+                 selected: state.route == .timeline && state.filterChapter == nil) {
+          state.clearFilters(); state.route = .timeline
         }
-        .listStyle(.sidebar)
-        .onChange(of: state.sidebarSelection) { _, _ in
-            state.detailMemoryId = nil
-            state.searchQuery = ""
+        sideItem(s.sideToday, systemImage: "sparkles", count: nil,
+                 selected: state.route == .library) { state.clearFilters(); state.route = .library }
+        sideItem(s.sideLetters, systemImage: "envelope", count: state.content.letters.count,
+                 selected: state.route == .letters) { state.clearFilters(); state.route = .letters }
+        sideItem(s.sideFavorites, systemImage: "heart",
+                 count: state.content.memories.filter(\.favorite).count,
+                 selected: false) { state.query = "favorite"; state.route = .search }
+      }
+
+      Section(s.sectionChapters) {
+        ForEach(state.content.chapters) { c in
+          chapterItem(c)
         }
-        .safeAreaInset(edge: .bottom) {
-            DayCounterFooter()
-        }
+      }
+
+      Section(s.sectionAtlas) {
+        sideItem(s.sidePlaces, systemImage: "map", count: nil,
+                 selected: state.route == .atlas) { state.clearFilters(); state.route = .atlas }
+      }
+
+      Section(s.sectionPeople) {
+        sideItem(s.sideEveryone, systemImage: "person.2", count: nil,
+                 selected: state.route == .people) { state.clearFilters(); state.route = .people }
+      }
     }
-}
+    .listStyle(.sidebar)
+    .safeAreaInset(edge: .bottom) { DayCounterFooter() }
+  }
 
-private struct SideLabel: View {
-    let title: String
-    let icon: String
-    var count: Int? = nil
-
-    init(_ title: String, icon: String, count: Int? = nil) {
-        self.title = title; self.icon = icon; self.count = count
-    }
-
-    var body: some View {
-        HStack {
-            Label(title, systemImage: icon)
-            if let count {
-                Spacer()
-                Text("\(count)").font(.system(size: 11)).foregroundStyle(Theme.ink3)
-            }
+  @ViewBuilder
+  private func sideItem(_ label: String, systemImage: String, count: Int?,
+                        selected: Bool, action: @escaping () -> Void) -> some View {
+    Button(action: action) {
+      HStack(spacing: 8) {
+        Image(systemName: systemImage)
+          .font(.system(size: 12, weight: .medium))
+          .foregroundStyle(selected ? .white : Theme.ink2)
+          .frame(width: 14)
+        Text(label)
+          .font(Theme.sans(12, weight: selected ? .semibold : .medium))
+          .foregroundStyle(selected ? .white : Theme.ink)
+          .lineLimit(1)
+        Spacer()
+        if let count {
+          Text("\(count)")
+            .font(Theme.sans(10.5, weight: .medium))
+            .foregroundStyle(selected ? .white.opacity(0.75) : Theme.ink3)
         }
+      }
+      .padding(.horizontal, 8)
+      .padding(.vertical, 4)
+      .background(selected ? Color(red: 0.137, green: 0.235, blue: 0.431).opacity(0.92) : .clear,
+                  in: RoundedRectangle(cornerRadius: 6))
+      .contentShape(Rectangle())
     }
+    .buttonStyle(.plain)
+    .listRowInsets(EdgeInsets(top: 1, leading: 0, bottom: 1, trailing: 0))
+  }
+
+  @ViewBuilder
+  private func chapterItem(_ c: Chapter) -> some View {
+    let count = state.content.memories.filter { $0.chapterId == c.id }.count
+    let selected = state.route == .timeline && state.filterChapter == c.id
+    Button {
+      state.filterChapter = c.id
+      state.query = ""
+      state.route = .timeline
+    } label: {
+      HStack(spacing: 8) {
+        RoundedRectangle(cornerRadius: 2)
+          .fill(Color(hue: c.hue / 360, saturation: 0.45, brightness: 0.72))
+          .frame(width: 9, height: 9)
+          .overlay(RoundedRectangle(cornerRadius: 2).stroke(.black.opacity(0.15), lineWidth: 0.5))
+        Text(c.label)
+          .font(Theme.sans(12, weight: selected ? .semibold : .medium))
+          .foregroundStyle(selected ? .white : Theme.ink)
+          .lineLimit(1)
+        Spacer()
+        Text("\(count)")
+          .font(Theme.sans(10.5, weight: .medium))
+          .foregroundStyle(selected ? .white.opacity(0.75) : Theme.ink3)
+      }
+      .padding(.horizontal, 8)
+      .padding(.vertical, 4)
+      .background(selected ? Color(red: 0.137, green: 0.235, blue: 0.431).opacity(0.92) : .clear,
+                  in: RoundedRectangle(cornerRadius: 6))
+      .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .listRowInsets(EdgeInsets(top: 1, leading: 0, bottom: 1, trailing: 0))
+  }
 }
 
 struct DayCounterFooter: View {
-    @ObservedObject private var updater = UpdateChecker.shared
+  @EnvironmentObject var state: AppState
+  @ObservedObject private var updater = UpdateChecker.shared
 
-    var body: some View {
-        VStack(spacing: 6) {
-            // Update badge — only visible when a newer version exists
-            if let version = updater.availableVersion {
-                Button {
-                    updater.openReleasesPage()
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "arrow.down.circle.fill")
-                            .font(.system(size: 11))
-                        Text("Update available: v\(version)")
-                            .font(.system(size: 11, weight: .medium))
-                        Spacer()
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 10).padding(.vertical, 7)
-                    .frame(maxWidth: .infinity)
-                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 7))
-                }
-                .buttonStyle(.plain)
-            }
-
-            // Day counter
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(alignment: .lastTextBaseline, spacing: 4) {
-                    Text("\(AppData.daysSinceStart.formatted())")
-                        .font(.custom("Georgia", size: 20))
-                        .foregroundStyle(Theme.accent)
-                    Text("days")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Theme.ink.opacity(0.70))
-                }
-                Text("since 9 June 2022")
-                    .font(.system(size: 10.5))
-                    .italic()
-                    .foregroundStyle(Theme.ink.opacity(0.55))
-            }
-            .padding(.horizontal, 12).padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+  var body: some View {
+    let days = state.content.daysSinceStart()
+    let s = state.content.strings
+    VStack(spacing: 6) {
+      if let version = updater.availableVersion {
+        Button { updater.openReleasesPage() } label: {
+          HStack(spacing: 6) {
+            Image(systemName: "arrow.down.circle.fill").font(.system(size: 11))
+            Text("Update available: v\(version)")
+              .font(Theme.sans(11, weight: .medium))
+            Spacer()
+          }
+          .foregroundStyle(.white)
+          .padding(.horizontal, 10).padding(.vertical, 7)
+          .frame(maxWidth: .infinity)
+          .background(Theme.accent, in: RoundedRectangle(cornerRadius: 7))
         }
-        .padding([.horizontal, .bottom], 8)
+        .buttonStyle(.plain)
+      }
+
+      HStack {
+        VStack(alignment: .leading, spacing: 2) {
+          HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Text(formatNumber(days, locale: state.language.locale))
+              .font(Theme.serif(22, weight: .medium))
+              .foregroundStyle(Theme.accent)
+              .tracking(-0.5)
+            Text(s.footerDays)
+              .font(Theme.sans(11, weight: .semibold))
+              .foregroundStyle(Theme.ink.opacity(0.7))
+          }
+          Text(s.footerSince)
+            .font(Theme.serif(11, italic: true))
+            .foregroundStyle(Theme.ink2.opacity(0.7))
+        }
+        Spacer()
+      }
+      .padding(.horizontal, 12)
+      .padding(.vertical, 10)
+      .background(Theme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
+    .padding(.horizontal, 8)
+    .padding(.bottom, 8)
+  }
+}
+
+func formatNumber(_ n: Int, locale: Locale = .current) -> String {
+  let f = NumberFormatter()
+  f.numberStyle = .decimal
+  f.locale = locale
+  return f.string(from: NSNumber(value: n)) ?? "\(n)"
 }
