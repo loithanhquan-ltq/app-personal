@@ -13,17 +13,15 @@ struct GitHubPhotosService {
     let path = "\(Self.folder)/\(slotId).jpg"
     let sha  = try await getSHA(path: path, token: token)
 
-    struct Body: Encodable {
-      let message: String; let content: String; let sha: String?
-    }
-    let body = Body(
-      message: "photo: \(slotId)",
-      content: jpegData.base64EncodedString(),
-      sha: sha
-    )
+    // sha must be omitted (not null) for new files; present for updates
+    var bodyDict: [String: String] = [
+      "message": "photo: \(slotId)",
+      "content": jpegData.base64EncodedString(),
+    ]
+    if let sha { bodyDict["sha"] = sha }
 
     var req = apiRequest(path: "/repos/\(Self.repo)/contents/\(path)", token: token, method: "PUT")
-    req.httpBody = try JSONEncoder().encode(body)
+    req.httpBody = try JSONEncoder().encode(bodyDict)
 
     let (data, resp) = try await URLSession.shared.data(for: req)
     let status = (resp as? HTTPURLResponse)?.statusCode ?? 0

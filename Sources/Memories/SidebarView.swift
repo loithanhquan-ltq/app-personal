@@ -119,9 +119,17 @@ struct DayCounterFooter: View {
           ProgressView(value: updater.updateProgress)
             .progressViewStyle(.linear)
             .tint(Theme.accent)
-          Text("Downloading update…")
-            .font(Theme.sans(10.5))
-            .foregroundStyle(Theme.ink3)
+          HStack(spacing: 4) {
+            Text(updater.updateStatusText)
+              .font(Theme.sans(10.5))
+              .foregroundStyle(Theme.ink3)
+            Spacer()
+            if !updater.speedText.isEmpty {
+              Text(updater.speedText)
+                .font(Theme.mono(10, weight: .medium))
+                .foregroundStyle(Theme.accent.opacity(0.75))
+            }
+          }
         }
         .padding(.horizontal, 10).padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)

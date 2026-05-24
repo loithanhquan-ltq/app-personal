@@ -125,11 +125,32 @@ struct PhotoSlot: View {
 
   private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
     guard let provider = providers.first else { return false }
-    _ = provider.loadObject(ofClass: URL.self) { url, _ in
-      guard let url else { return }
-      DispatchQueue.main.async { state.setPhoto(id, source: url) }
+    if provider.canLoadObject(ofClass: URL.self) {
+      _ = provider.loadObject(ofClass: URL.self) { url, _ in
+        if let url, url.isFileURL {
+          DispatchQueue.main.async { state.setPhoto(id, source: url) }
+        } else {
+          // Provider advertised a URL but gave a non-file one — fall back to image data
+          dropImageData(from: provider)
+        }
+      }
+    } else {
+      // No URL at all (e.g. drag from browser or clipboard) — load raw image data
+      dropImageData(from: provider)
     }
     return true
+  }
+
+  private func dropImageData(from provider: NSItemProvider) {
+    guard provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) else { return }
+    provider.loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) { data, _ in
+      guard let data, let img = NSImage(data: data),
+            let tiff = img.tiffRepresentation else { return }
+      let tmp = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent(UUID().uuidString + ".tiff")
+      try? tiff.write(to: tmp)
+      DispatchQueue.main.async { state.setPhoto(id, source: tmp) }
+    }
   }
 
   private func pickFile() {

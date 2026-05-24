@@ -1,6 +1,7 @@
-// AtlasView.swift — abstract dotted-grid map + postcard grid by place.
+// AtlasView.swift — MapKit map of South Vietnam + postcard grid by place.
 
 import SwiftUI
+import MapKit
 
 struct AtlasView: View {
   @EnvironmentObject var state: AppState
@@ -29,7 +30,7 @@ struct AtlasView: View {
         .padding(.top, 6)
         .padding(.bottom, 24)
 
-        AbstractMap(places: order, byPlace: byPlace)
+        VietnamMap(places: order, byPlace: byPlace)
           .padding(.bottom, 36)
 
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 16),
@@ -50,76 +51,71 @@ struct AtlasView: View {
   }
 }
 
-struct AbstractMap: View {
+struct VietnamMap: View {
   let places: [Place]
   let byPlace: [String: [Memory]]
   @EnvironmentObject var state: AppState
 
-  private let W: CGFloat = 1000
-  private let H: CGFloat = 420
+  @State private var position: MapCameraPosition = .region(
+    MKCoordinateRegion(
+      center: CLLocationCoordinate2D(latitude: 10.8, longitude: 107.5),
+      span: MKCoordinateSpan(latitudeDelta: 5.0, longitudeDelta: 6.0)
+    )
+  )
 
   var body: some View {
-    GeometryReader { geo in
-      let scale = min(geo.size.width / W, 1)
-      Canvas { ctx, size in
-        let dotGap: CGFloat = 20
-        let dotColor = GraphicsContext.Shading.color(.black.opacity(0.16))
-        for x in stride(from: CGFloat(0), through: size.width, by: dotGap) {
-          for y in stride(from: CGFloat(0), through: size.height, by: dotGap) {
-            ctx.fill(Path(ellipseIn: CGRect(x: x, y: y, width: 1.4, height: 1.4)), with: dotColor)
+    // Deduplicate places at identical coordinates (home + cafe → one HCMC pin)
+    let pinGroups: [(Place, Int)] = {
+      var result: [(Place, Int)] = []
+      var keyToIndex: [String: Int] = [:]
+      for p in places {
+        let key = "\(p.lat),\(p.lng)"
+        let c = byPlace[p.id]?.count ?? 0
+        if let idx = keyToIndex[key] { result[idx].1 += c }
+        else { keyToIndex[key] = result.count; result.append((p, c)) }
+      }
+      return result
+    }()
+
+    // Travel route connecting cities in chronological order
+    let routeCoords: [CLLocationCoordinate2D] = {
+      let ordered = state.content.memories.sorted { $0.sortKey < $1.sortKey }
+        .compactMap { state.content.place($0.placeId) }
+      var deduped: [Place] = []
+      for p in ordered {
+        if let last = deduped.last,
+           abs(last.lat - p.lat) < 0.001 && abs(last.lng - p.lng) < 0.001 { continue }
+        deduped.append(p)
+      }
+      return deduped.map { CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng) }
+    }()
+
+    Map(position: $position) {
+      if routeCoords.count > 1 {
+        MapPolyline(coordinates: routeCoords)
+          .stroke(Theme.accent.opacity(0.55), style: StrokeStyle(lineWidth: 2, dash: [5, 5]))
+      }
+      ForEach(pinGroups, id: \.0.id) { (place, count) in
+        Annotation(place.label,
+                   coordinate: CLLocationCoordinate2D(latitude: place.lat, longitude: place.lng),
+                   anchor: .bottom) {
+          ZStack {
+            Circle()
+              .fill(Theme.accent.opacity(0.18))
+              .frame(width: 28, height: 28)
+            Circle()
+              .fill(Theme.accent)
+              .frame(width: 14, height: 14)
+              .overlay(Circle().strokeBorder(.white, lineWidth: 2))
           }
-        }
-        let blobs: [(CGFloat, CGFloat, CGFloat, CGFloat)] = [
-          (120, 110, 230, 90), (330, 220, 110, 140),
-          (470, 100, 130, 100), (520, 200, 240, 160),
-          (620, 120, 280, 130), (820, 280, 90, 70),
-        ]
-        for b in blobs {
-          let rect = CGRect(x: b.0 * scale, y: b.1 * scale, width: b.2 * scale, height: b.3 * scale)
-          ctx.fill(Path(ellipseIn: rect), with: .color(Theme.accent.opacity(0.06)))
-          ctx.stroke(Path(ellipseIn: rect), with: .color(Theme.accent.opacity(0.18)),
-                     style: StrokeStyle(lineWidth: 0.6, dash: [2, 3]))
-        }
-        let ordered = state.content.memories.sorted { $0.sortKey < $1.sortKey }
-          .compactMap { state.content.place($0.placeId) }
-        for i in 1..<ordered.count {
-          let p1 = project(ordered[i - 1], W: W, H: H, scale: scale)
-          let p2 = project(ordered[i],     W: W, H: H, scale: scale)
-          if hypot(p2.x - p1.x, p2.y - p1.y) < 2 { continue }
-          let mid = CGPoint(x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 - 30)
-          var path = Path()
-          path.move(to: p1)
-          path.addQuadCurve(to: p2, control: mid)
-          ctx.stroke(path, with: .color(Theme.accent.opacity(0.35)),
-                     style: StrokeStyle(lineWidth: 0.8, dash: [2, 3]))
-        }
-        for p in places {
-          let pt = project(p, W: W, H: H, scale: scale)
-          let count = byPlace[p.id]?.count ?? 0
-          let r: CGFloat = 5 + min(CGFloat(count), 6) * 1.2
-          ctx.fill(Path(ellipseIn: CGRect(x: pt.x - r - 5, y: pt.y - r - 5,
-                                         width: (r + 5) * 2, height: (r + 5) * 2)),
-                   with: .color(Theme.accent.opacity(0.10)))
-          ctx.fill(Path(ellipseIn: CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2)),
-                   with: .color(Theme.accent))
-          ctx.stroke(Path(ellipseIn: CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2)),
-                     with: .color(.white), lineWidth: 1.5)
-          ctx.draw(Text(p.label).font(Theme.mono(11)).foregroundColor(Theme.ink2),
-                   at: CGPoint(x: pt.x + r + 6, y: pt.y - 1), anchor: .leading)
+          .shadow(color: .black.opacity(0.22), radius: 3, y: 1)
         }
       }
-      .frame(width: geo.size.width, height: H * scale)
     }
-    .frame(height: 420)
-    .padding(18)
-    .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
+    .frame(height: 440)
+    .clipShape(RoundedRectangle(cornerRadius: 14))
     .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.rule, lineWidth: 0.5))
-  }
-
-  private func project(_ p: Place, W: CGFloat, H: CGFloat, scale: CGFloat) -> CGPoint {
-    let x = ((p.lng + 180) / 360) * Double(W) * Double(scale)
-    let y = ((90 - p.lat) / 180) * Double(H) * Double(scale)
-    return CGPoint(x: x, y: y)
   }
 }
 

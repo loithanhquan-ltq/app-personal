@@ -9,6 +9,30 @@ class UpdateChecker: ObservableObject {
     @Published var isUpdating: Bool = false
     @Published var updateProgress: Double = 0.0
     @Published var updateError: String? = nil
+    @Published var downloadedBytes: Int64 = 0
+    @Published var totalBytes: Int64 = 0
+    @Published var downloadSpeedKBps: Double = 0
+
+    var updateStatusText: String {
+      if updateProgress < 0.66 {
+        if totalBytes > 0 {
+          let pct = Int(Double(downloadedBytes) / Double(totalBytes) * 100)
+          return "Downloading… \(pct)%"
+        }
+        return "Downloading…"
+      } else if updateProgress < 0.91 {
+        return "Extracting…"
+      }
+      return "Installing…"
+    }
+
+    var speedText: String {
+      guard downloadSpeedKBps >= 1 else { return "" }
+      if downloadSpeedKBps >= 1024 {
+        return String(format: "%.1f MB/s", downloadSpeedKBps / 1024)
+      }
+      return "\(Int(downloadSpeedKBps)) KB/s"
+    }
 
     private var pendingZipURL: URL? = nil
     private let apiURL = "https://api.github.com/repos/loithanhquan-ltq/app-personal/releases/latest"
@@ -46,10 +70,14 @@ class UpdateChecker: ObservableObject {
         isUpdating = true
         updateProgress = 0.0
         updateError = nil
+        downloadedBytes = 0
+        totalBytes = 0
+        downloadSpeedKBps = 0
 
         do {
             // Download
             let zipPath = try await downloadZip(from: zipURL)
+            downloadSpeedKBps = 0
             updateProgress = 0.7
 
             // Unzip
@@ -98,13 +126,29 @@ class UpdateChecker: ObservableObject {
         var data = Data()
         data.reserveCapacity(total > 0 ? Int(total) : 10_000_000)
 
+        totalBytes = max(total, 0)
+        let startTime = Date()
+        var lastUIUpdate: Int64 = 0
+
         for try await byte in asyncBytes {
             data.append(byte)
-            if total > 0 {
-                let progress = Double(data.count) / Double(total) * 0.65
-                updateProgress = progress
+            downloadedBytes += 1
+            // Refresh UI every 64 KB to avoid thrashing
+            if downloadedBytes - lastUIUpdate >= 65_536 {
+                lastUIUpdate = downloadedBytes
+                let elapsed = max(Date().timeIntervalSince(startTime), 0.001)
+                downloadSpeedKBps = Double(downloadedBytes) / elapsed / 1024.0
+                if total > 0 {
+                    updateProgress = Double(downloadedBytes) / Double(total) * 0.65
+                }
             }
         }
+
+        // Final reading
+        let elapsed = max(Date().timeIntervalSince(startTime), 0.001)
+        downloadSpeedKBps = Double(downloadedBytes) / elapsed / 1024.0
+        if total > 0 { updateProgress = 0.65 }
+
         try data.write(to: dest)
         return dest
     }
