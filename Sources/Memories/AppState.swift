@@ -12,6 +12,9 @@ final class AppState: ObservableObject {
   @Published var query: String = ""
   @Published var filterChapter: String? = nil
   @Published var photos: [String: URL] = [:]
+  @Published var userFavorites: Set<String> = []
+  @Published var toast: String? = nil
+  private var toastTask: Task<Void, Never>? = nil
 
   // GitHub photo sync
   @Published var githubToken: String? = UserDefaults.standard.string(forKey: "github.token")
@@ -27,6 +30,8 @@ final class AppState: ObservableObject {
   init() {
     let l = Language(rawValue: UserDefaults.standard.string(forKey: "memories.lang") ?? "en") ?? .en
     self.content = Datasets.content(for: l)
+    let saved = UserDefaults.standard.array(forKey: "memories.favorites") as? [String]
+    userFavorites = Set(saved ?? content.memories.filter(\.favorite).map(\.id))
     loadPhotos()
     Task { await self.syncRemotePhotos() }
   }
@@ -38,11 +43,38 @@ final class AppState: ObservableObject {
     content = Datasets.content(for: l)
   }
 
-  func open(_ memoryId: String) { route = .detail(memoryId) }
+  func open(_ memoryId: String) {
+    withAnimation(.easeInOut(duration: 0.18)) { route = .detail(memoryId) }
+  }
 
-  func openChapter(_ id: String) { filterChapter = id; route = .timeline }
+  func openChapter(_ id: String) {
+    withAnimation(.easeInOut(duration: 0.18)) { filterChapter = id; route = .timeline }
+  }
 
   func clearFilters() { filterChapter = nil; query = "" }
+
+  func isFavorite(_ id: String) -> Bool { userFavorites.contains(id) }
+
+  func toggleFavorite(_ id: String) {
+    if userFavorites.contains(id) {
+      userFavorites.remove(id)
+      showToast("Removed from favorites")
+    } else {
+      userFavorites.insert(id)
+      showToast("Added to favorites ★")
+    }
+    UserDefaults.standard.set(Array(userFavorites), forKey: "memories.favorites")
+  }
+
+  func showToast(_ message: String) {
+    toastTask?.cancel()
+    withAnimation(.easeInOut(duration: 0.2)) { toast = message }
+    toastTask = Task { @MainActor [weak self] in
+      try? await Task.sleep(for: .seconds(2.5))
+      guard let self, !Task.isCancelled else { return }
+      withAnimation(.easeInOut(duration: 0.2)) { self.toast = nil }
+    }
+  }
 
   // MARK: - GitHub token
 

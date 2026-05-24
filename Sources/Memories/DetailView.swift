@@ -24,7 +24,7 @@ struct DetailView: View {
         VStack(alignment: .leading, spacing: 0) {
           // Back bar
           HStack {
-            Button { state.route = .timeline } label: {
+            Button { withAnimation(.easeInOut(duration: 0.18)) { state.route = .timeline } } label: {
               HStack(spacing: 4) {
                 Image(systemName: "chevron.left").font(.system(size: 11, weight: .semibold))
                 Text(s.back).font(Theme.sans(13))
@@ -34,8 +34,17 @@ struct DetailView: View {
             }
             .buttonStyle(.plain)
             Spacer()
-            iconBtn("heart\(m.favorite ? ".fill" : "")", accent: m.favorite)
-            iconBtn("square.and.arrow.up")
+            iconBtn("heart\(state.isFavorite(m.id) ? ".fill" : "")", accent: state.isFavorite(m.id)) {
+              state.toggleFavorite(m.id)
+            }
+            ShareLink(item: "\(m.title)\n\n\(m.date) · \(place?.label ?? "")\n\n\(m.body)") {
+              Image(systemName: "square.and.arrow.up")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Theme.ink2)
+                .frame(width: 30, height: 30)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
             iconBtn("pencil")
           }
           .padding(.horizontal, 24)
@@ -152,12 +161,17 @@ struct DetailView: View {
   }
 
   @ViewBuilder
-  private func iconBtn(_ name: String, accent: Bool = false) -> some View {
-    Image(systemName: name)
+  private func iconBtn(_ name: String, accent: Bool = false, action: (() -> Void)? = nil) -> some View {
+    let img = Image(systemName: name)
       .font(.system(size: 14, weight: .medium))
       .foregroundStyle(accent ? Theme.accent : Theme.ink2)
       .frame(width: 30, height: 30)
       .contentShape(Rectangle())
+    if let action {
+      Button(action: action) { img }.buttonStyle(.plain)
+    } else {
+      img
+    }
   }
 
   @ViewBuilder
@@ -177,7 +191,7 @@ struct DetailView: View {
     if let m = memory {
       Button { state.open(m.id) } label: {
         VStack(alignment: align, spacing: 6) {
-          Text("← \(label)".uppercased())
+          Text("\(align == .leading ? "←" : "→") \(label)".uppercased())
             .font(Theme.mono(10.5, weight: .medium))
             .tracking(1.2)
             .foregroundStyle(Theme.ink3)
@@ -195,6 +209,7 @@ struct DetailView: View {
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.rule, lineWidth: 0.5))
       }
       .buttonStyle(.plain)
+      .keyboardShortcut(align == .leading ? .leftArrow : .rightArrow, modifiers: [])
     } else {
       Color.clear.frame(maxWidth: .infinity)
     }

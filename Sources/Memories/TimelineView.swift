@@ -68,6 +68,7 @@ struct YearMark: View {
 struct MemoryWideCard: View {
   let memory: Memory
   @EnvironmentObject var state: AppState
+  @State private var isHovered = false
 
   var body: some View {
     Button { state.open(memory.id) } label: {
@@ -76,7 +77,7 @@ struct MemoryWideCard: View {
                   cornerRadius: 8, height: 150)
           .frame(width: 220)
         VStack(alignment: .leading, spacing: 6) {
-          Text("\(memory.date) · \(state.content.place(memory.placeId)?.label ?? "")\(memory.favorite ? " · ★" : "")".uppercased())
+          Text("\(memory.date) · \(state.content.place(memory.placeId)?.label ?? "")\(state.isFavorite(memory.id) ? " · ★" : "")".uppercased())
             .font(Theme.mono(10.5, weight: .medium))
             .tracking(1)
             .foregroundStyle(Theme.ink3)
@@ -101,10 +102,27 @@ struct MemoryWideCard: View {
         Spacer(minLength: 0)
       }
       .padding(16)
-      .background(Color.clear, in: RoundedRectangle(cornerRadius: 12))
+      .background(isHovered ? Theme.card : Color.clear, in: RoundedRectangle(cornerRadius: 12))
+      .overlay(
+        RoundedRectangle(cornerRadius: 12)
+          .strokeBorder(isHovered ? Theme.rule : Color.clear, lineWidth: 0.5)
+      )
       .contentShape(RoundedRectangle(cornerRadius: 12))
     }
     .buttonStyle(.plain)
+    .onHover { isHovered = $0 }
+    .animation(.easeOut(duration: 0.12), value: isHovered)
+    .contextMenu {
+      Button("Open") { state.open(memory.id) }
+      Divider()
+      Button(state.isFavorite(memory.id) ? "Remove from Favorites" : "Add to Favorites") {
+        state.toggleFavorite(memory.id)
+      }
+      Button("Copy Date") {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(memory.date, forType: .string)
+      }
+    }
   }
 }
 

@@ -9,7 +9,7 @@ struct LibraryView: View {
     let s = state.content.strings
     let days = state.content.daysSinceStart()
     let dayOne = state.content.memory("m01")!
-    let favs = state.content.memories.filter(\.favorite)
+    let favs = state.content.memories.filter { state.isFavorite($0.id) }
     let anniv = state.content.memories
       .filter { ["m01", "m10", "m14", "m17"].contains($0.id) }
     let recent = state.content.memories.sorted { $0.sortKey > $1.sortKey }.prefix(3)
@@ -209,6 +209,7 @@ struct SectionHeader: View {
 struct MemoryTile: View {
   let memory: Memory
   @EnvironmentObject var state: AppState
+  @State private var isHovered = false
 
   var body: some View {
     Button { state.open(memory.id) } label: {
@@ -233,7 +234,22 @@ struct MemoryTile: View {
       .padding(10)
       .background(Theme.card, in: RoundedRectangle(cornerRadius: 10))
       .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.rule, lineWidth: 0.5))
+      .scaleEffect(isHovered ? 1.018 : 1.0)
+      .shadow(color: isHovered ? .black.opacity(0.09) : .clear, radius: 10, y: 5)
     }
     .buttonStyle(.plain)
+    .onHover { isHovered = $0 }
+    .animation(.easeOut(duration: 0.15), value: isHovered)
+    .contextMenu {
+      Button("Open") { state.open(memory.id) }
+      Divider()
+      Button(state.isFavorite(memory.id) ? "Remove from Favorites" : "Add to Favorites") {
+        state.toggleFavorite(memory.id)
+      }
+      Button("Copy Date") {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(memory.date, forType: .string)
+      }
+    }
   }
 }

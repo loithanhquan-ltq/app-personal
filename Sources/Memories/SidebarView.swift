@@ -11,15 +11,21 @@ struct Sidebar: View {
       Section(s.sectionLibrary) {
         sideItem(s.sideAll, systemImage: "book.closed", count: state.content.memories.count,
                  selected: state.route == .timeline && state.filterChapter == nil) {
-          state.clearFilters(); state.route = .timeline
+          withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .timeline }
         }
         sideItem(s.sideToday, systemImage: "sparkles", count: nil,
-                 selected: state.route == .library) { state.clearFilters(); state.route = .library }
+                 selected: state.route == .library) {
+          withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .library }
+        }
         sideItem(s.sideLetters, systemImage: "envelope", count: state.content.letters.count,
-                 selected: state.route == .letters) { state.clearFilters(); state.route = .letters }
+                 selected: state.route == .letters) {
+          withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .letters }
+        }
         sideItem(s.sideFavorites, systemImage: "heart",
-                 count: state.content.memories.filter(\.favorite).count,
-                 selected: false) { state.query = "favorite"; state.route = .search }
+                 count: state.userFavorites.count,
+                 selected: false) {
+          withAnimation(.easeInOut(duration: 0.18)) { state.query = "favorite"; state.route = .search }
+        }
       }
 
       Section(s.sectionChapters) {
@@ -30,12 +36,16 @@ struct Sidebar: View {
 
       Section(s.sectionAtlas) {
         sideItem(s.sidePlaces, systemImage: "map", count: nil,
-                 selected: state.route == .atlas) { state.clearFilters(); state.route = .atlas }
+                 selected: state.route == .atlas) {
+          withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .atlas }
+        }
       }
 
       Section(s.sectionPeople) {
         sideItem(s.sideEveryone, systemImage: "person.2", count: nil,
-                 selected: state.route == .people) { state.clearFilters(); state.route = .people }
+                 selected: state.route == .people) {
+          withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .people }
+        }
       }
     }
     .listStyle(.sidebar)
@@ -77,9 +87,11 @@ struct Sidebar: View {
     let count = state.content.memories.filter { $0.chapterId == c.id }.count
     let selected = state.route == .timeline && state.filterChapter == c.id
     Button {
-      state.filterChapter = c.id
-      state.query = ""
-      state.route = .timeline
+      withAnimation(.easeInOut(duration: 0.18)) {
+        state.filterChapter = c.id
+        state.query = ""
+        state.route = .timeline
+      }
     } label: {
       HStack(spacing: 8) {
         RoundedRectangle(cornerRadius: 2)

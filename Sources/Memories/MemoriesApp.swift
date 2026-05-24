@@ -63,29 +63,52 @@ struct RootView: View {
 struct DetailColumn: View {
   @EnvironmentObject var state: AppState
 
-  var body: some View {
-    VStack(spacing: 0) {
-      TopBar()
-      Divider().overlay(Theme.rule)
+  private var routeTag: String {
+    if !state.query.trim().isEmpty { return "search" }
+    switch state.route {
+    case .library:          return "library"
+    case .timeline:         return "timeline-\(state.filterChapter ?? "all")"
+    case .letters:          return "letters"
+    case .atlas:            return "atlas"
+    case .people:           return "people"
+    case .search:           return "search"
+    case .detail(let id):   return "detail-\(id)"
+    }
+  }
 
-      Group {
-        if !state.query.trim().isEmpty {
-          SearchResultsView()
-        } else {
-          switch state.route {
-          case .library:         LibraryView()
-          case .timeline:        TimelineView()
-          case .letters:         LettersView()
-          case .atlas:           AtlasView()
-          case .people:          PeopleView()
-          case .search:          SearchResultsView()
-          case .detail(let id):  DetailView(memoryId: id)
-          }
+  var body: some View {
+    ZStack(alignment: .top) {
+      VStack(spacing: 0) {
+        TopBar()
+        Divider().overlay(Theme.rule)
+        contentView
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+      }
+      .background(Theme.bg)
+      ToastOverlay()
+    }
+  }
+
+  @ViewBuilder
+  private var contentView: some View {
+    Group {
+      if !state.query.trim().isEmpty {
+        SearchResultsView()
+      } else {
+        switch state.route {
+        case .library:         LibraryView()
+        case .timeline:        TimelineView()
+        case .letters:         LettersView()
+        case .atlas:           AtlasView()
+        case .people:          PeopleView()
+        case .search:          SearchResultsView()
+        case .detail(let id):  DetailView(memoryId: id)
         }
       }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    .background(Theme.bg)
+    .id(routeTag)
+    .transition(.opacity)
+    .animation(.easeInOut(duration: 0.18), value: routeTag)
   }
 }
 
@@ -119,11 +142,11 @@ struct NavSwitcher: View {
   var body: some View {
     let s = state.content.strings
     HStack(spacing: 1) {
-      seg(s.tabLibrary,  active: isActive(.library))  { state.clearFilters(); state.route = .library }
-      seg(s.tabTimeline, active: isActive(.timeline)) { state.clearFilters(); state.route = .timeline }
-      seg(s.tabLetters,  active: isActive(.letters))  { state.clearFilters(); state.route = .letters }
-      seg(s.tabAtlas,    active: isActive(.atlas))    { state.clearFilters(); state.route = .atlas }
-      seg(s.tabPeople,   active: isActive(.people))   { state.clearFilters(); state.route = .people }
+      seg(s.tabLibrary,  active: isActive(.library))  { withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .library } }
+      seg(s.tabTimeline, active: isActive(.timeline)) { withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .timeline } }
+      seg(s.tabLetters,  active: isActive(.letters))  { withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .letters } }
+      seg(s.tabAtlas,    active: isActive(.atlas))    { withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .atlas } }
+      seg(s.tabPeople,   active: isActive(.people))   { withAnimation(.easeInOut(duration: 0.18)) { state.clearFilters(); state.route = .people } }
     }
     .padding(2)
     .background(.black.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
