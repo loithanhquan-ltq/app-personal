@@ -183,7 +183,7 @@ struct DayCounterFooter: View {
             .foregroundStyle(state.githubToken != nil ? Theme.accent : Theme.ink3)
         }
         .buttonStyle(.plain)
-        .help(state.githubToken != nil ? "Photos syncing to GitHub" : "Connect GitHub to sync photos")
+        .help(state.githubToken != nil ? "Photos uploading to GitHub" : "Connect GitHub to upload photos")
       }
       .padding(.horizontal, 12)
       .padding(.vertical, 10)

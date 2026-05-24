@@ -28,9 +28,7 @@ final class AppState: ObservableObject {
     let l = Language(rawValue: UserDefaults.standard.string(forKey: "memories.lang") ?? "en") ?? .en
     self.content = Datasets.content(for: l)
     loadPhotos()
-    if UserDefaults.standard.string(forKey: "github.token") != nil {
-      Task { await self.syncRemotePhotos() }
-    }
+    Task { await self.syncRemotePhotos() }
   }
 
   var language: Language { content.lang }
@@ -65,7 +63,6 @@ final class AppState: ObservableObject {
   // MARK: - Remote photo sync
 
   func syncRemotePhotos() async {
-    guard let token = githubToken else { return }
     let service = GitHubPhotosService()
     let slotIds = content.memories.map { "hero-\($0.id)" }
                 + content.places.map  { "place-\($0.id)" }

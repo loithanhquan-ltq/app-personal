@@ -76,7 +76,7 @@ struct TokenSetupView: View {
             .foregroundStyle(Theme.ink3)
           VStack(alignment: .leading, spacing: 4) {
             row("When you drop a photo, it's uploaded to the repo's assets/photos/ folder.")
-            row("Your partner's app fetches the photo automatically on next launch.")
+            row("Your partner needs no token — photos load automatically for everyone.")
             row("Photos persist across updates — they live in the repo, not just the app.")
           }
         }
