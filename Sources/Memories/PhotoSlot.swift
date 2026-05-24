@@ -27,9 +27,9 @@ struct PhotoSlot: View {
         VStack {
           Spacer()
           HStack {
-            Text(placeholder.uppercased())
+            Text((hovering ? "Click to add photo" : placeholder).uppercased())
               .font(Theme.mono(10, weight: .medium))
-              .foregroundStyle(.black.opacity(0.55))
+              .foregroundStyle(hovering ? Theme.accent : .black.opacity(0.55))
               .padding(.horizontal, 7)
               .padding(.vertical, 3)
               .background(.white.opacity(0.78), in: RoundedRectangle(cornerRadius: 4))
@@ -49,7 +49,38 @@ struct PhotoSlot: View {
           .foregroundStyle(Theme.accent)
       }
 
-      if hovering && state.photos[id] != nil {
+      // Upload status badges (top-right)
+      if state.uploadingSlots.contains(id) {
+        badge(top: true) {
+          HStack(spacing: 5) {
+            ProgressView().controlSize(.mini).tint(Theme.accent)
+            Text("Syncing…").font(Theme.sans(10.5, weight: .medium)).foregroundStyle(Theme.ink2)
+          }
+        }
+      } else if let errMsg = state.uploadErrors[id] {
+        badge(top: true) {
+          HStack(spacing: 5) {
+            Image(systemName: "exclamationmark.triangle.fill")
+              .font(.system(size: 10)).foregroundStyle(.orange)
+            Text("Upload failed")
+              .font(Theme.sans(10.5, weight: .medium)).foregroundStyle(Theme.ink2)
+            Button("Retry") { state.retryUpload(id: id) }
+              .font(Theme.sans(10.5, weight: .semibold)).foregroundStyle(Theme.accent)
+              .buttonStyle(.plain)
+          }
+        }
+        .help(errMsg)
+      } else if state.photos[id] != nil && state.githubToken == nil {
+        badge(top: true) {
+          HStack(spacing: 4) {
+            Image(systemName: "cloud.slash").font(.system(size: 10)).foregroundStyle(Theme.ink3)
+            Text("Not synced").font(Theme.sans(10.5)).foregroundStyle(Theme.ink3)
+          }
+        }
+      }
+
+      // Remove button (bottom-right on hover)
+      if hovering && state.photos[id] != nil && !state.uploadingSlots.contains(id) {
         VStack { Spacer(); HStack { Spacer()
           Button("Remove") { state.clearPhoto(id) }
             .buttonStyle(.borderless)
@@ -67,11 +98,29 @@ struct PhotoSlot: View {
       RoundedRectangle(cornerRadius: cornerRadius)
         .strokeBorder(.black.opacity(0.06), lineWidth: 0.5)
     )
+    .contentShape(Rectangle())
     .onHover { hovering = $0 }
     .onDrop(of: [.fileURL, .image], isTargeted: $dropTargeted) { providers in
       handleDrop(providers)
     }
-    .onTapGesture(count: 2) { pickFile() }
+    .onTapGesture {
+      if state.photos[id] == nil { pickFile() }
+    }
+  }
+
+  @ViewBuilder
+  private func badge<C: View>(top: Bool, @ViewBuilder _ content: () -> C) -> some View {
+    VStack {
+      if !top { Spacer() }
+      HStack {
+        Spacer()
+        content()
+          .padding(.horizontal, 8).padding(.vertical, 4)
+          .background(.white.opacity(0.90), in: Capsule())
+          .padding(8)
+      }
+      if top { Spacer() }
+    }
   }
 
   private func handleDrop(_ providers: [NSItemProvider]) -> Bool {

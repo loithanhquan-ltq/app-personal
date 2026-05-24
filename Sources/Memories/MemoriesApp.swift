@@ -54,6 +54,9 @@ struct RootView: View {
     }
     .navigationTitle("")
     .background(Theme.bg)
+    .sheet(isPresented: $state.showGitHubSetup) {
+      TokenSetupView().environmentObject(state)
+    }
   }
 }
 

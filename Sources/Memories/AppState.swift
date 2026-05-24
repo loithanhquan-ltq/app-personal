@@ -1,4 +1,4 @@
-// AppState.swift — observable model, language, navigation, photo storage.
+// AppState.swift — observable model, language, navigation, photo storage + GitHub sync.
 
 import SwiftUI
 import AppKit
@@ -13,20 +13,24 @@ final class AppState: ObservableObject {
   @Published var filterChapter: String? = nil
   @Published var photos: [String: URL] = [:]
 
+  // GitHub photo sync
+  @Published var githubToken: String? = UserDefaults.standard.string(forKey: "github.token")
+  @Published var showGitHubSetup = false
+  @Published var uploadingSlots: Set<String> = []
+  @Published var uploadErrors: [String: String] = [:]
+  private var pendingUploadSlots: Set<String> = []
+
   enum Route: Hashable {
-    case library
-    case timeline
-    case letters
-    case atlas
-    case people
-    case search
-    case detail(String)
+    case library, timeline, letters, atlas, people, search, detail(String)
   }
 
   init() {
     let l = Language(rawValue: UserDefaults.standard.string(forKey: "memories.lang") ?? "en") ?? .en
     self.content = Datasets.content(for: l)
     loadPhotos()
+    if UserDefaults.standard.string(forKey: "github.token") != nil {
+      Task { await self.syncRemotePhotos() }
+    }
   }
 
   var language: Language { content.lang }
@@ -36,21 +40,56 @@ final class AppState: ObservableObject {
     content = Datasets.content(for: l)
   }
 
-  func open(_ memoryId: String) {
-    route = .detail(memoryId)
+  func open(_ memoryId: String) { route = .detail(memoryId) }
+
+  func openChapter(_ id: String) { filterChapter = id; route = .timeline }
+
+  func clearFilters() { filterChapter = nil; query = "" }
+
+  // MARK: - GitHub token
+
+  func setGithubToken(_ token: String) {
+    githubToken = token
+    UserDefaults.standard.set(token, forKey: "github.token")
+    Task {
+      await syncRemotePhotos()
+      await uploadPending(token: token)
+    }
   }
 
-  func openChapter(_ id: String) {
-    filterChapter = id
-    route = .timeline
+  func disconnectGithub() {
+    githubToken = nil
+    UserDefaults.standard.removeObject(forKey: "github.token")
   }
 
-  func clearFilters() {
-    filterChapter = nil
-    query = ""
+  // MARK: - Remote photo sync
+
+  func syncRemotePhotos() async {
+    guard let token = githubToken else { return }
+    let service = GitHubPhotosService()
+    let slotIds = content.memories.map { "hero-\($0.id)" }
+                + content.places.map  { "place-\($0.id)" }
+
+    await withTaskGroup(of: Void.self) { group in
+      for slotId in slotIds where photos[slotId] == nil {
+        group.addTask { [weak self] in
+          guard let self else { return }
+          let url = service.rawURL(for: slotId)
+          guard let (data, resp) = try? await URLSession.shared.data(from: url),
+                (resp as? HTTPURLResponse)?.statusCode == 200 else { return }
+          let dest = await self.photoDir.appendingPathComponent("\(slotId).jpg")
+          try? data.write(to: dest)
+          await MainActor.run {
+            self.photos[slotId] = dest
+          }
+        }
+      }
+    }
+    savePhotos()
   }
 
-  // ── Photo store ──────────────────────────────────────────
+  // MARK: - Photo store
+
   private var photoDir: URL {
     let fm = FileManager.default
     let support = try! fm.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -78,23 +117,63 @@ final class AppState: ObservableObject {
   }
 
   func setPhoto(_ id: String, source: URL) {
-    let ext = source.pathExtension.isEmpty ? "jpg" : source.pathExtension
-    let dest = photoDir.appendingPathComponent("\(id).\(ext)")
+    guard let nsImage = NSImage(contentsOf: source),
+          let tiff    = nsImage.tiffRepresentation,
+          let bitmap  = NSBitmapImageRep(data: tiff),
+          let jpeg    = bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.85])
+    else { return }
+
+    let dest = photoDir.appendingPathComponent("\(id).jpg")
     try? FileManager.default.removeItem(at: dest)
     do {
-      try FileManager.default.copyItem(at: source, to: dest)
+      try jpeg.write(to: dest)
       photos[id] = dest
       savePhotos()
+
+      if let token = githubToken {
+        Task { await uploadSlot(id: id, jpegData: jpeg, token: token) }
+      } else {
+        pendingUploadSlots.insert(id)
+      }
     } catch {
       NSLog("setPhoto failed: \(error)")
     }
   }
 
+  func retryUpload(id: String) {
+    guard let token = githubToken,
+          let localURL = photos[id],
+          let data = try? Data(contentsOf: localURL) else { return }
+    uploadErrors.removeValue(forKey: id)
+    Task { await uploadSlot(id: id, jpegData: data, token: token) }
+  }
+
   func clearPhoto(_ id: String) {
-    if let url = photos[id] {
-      try? FileManager.default.removeItem(at: url)
-    }
+    if let url = photos[id] { try? FileManager.default.removeItem(at: url) }
     photos.removeValue(forKey: id)
+    pendingUploadSlots.remove(id)
+    uploadErrors.removeValue(forKey: id)
     savePhotos()
+  }
+
+  private func uploadSlot(id: String, jpegData: Data, token: String) async {
+    uploadingSlots.insert(id)
+    uploadErrors.removeValue(forKey: id)
+    do {
+      try await GitHubPhotosService().upload(jpegData: jpegData, slotId: id, token: token)
+      pendingUploadSlots.remove(id)
+    } catch {
+      uploadErrors[id] = error.localizedDescription
+    }
+    uploadingSlots.remove(id)
+  }
+
+  private func uploadPending(token: String) async {
+    let slots = pendingUploadSlots
+    for id in slots {
+      guard let localURL = photos[id],
+            let data = try? Data(contentsOf: localURL) else { continue }
+      await uploadSlot(id: id, jpegData: data, token: token)
+    }
   }
 }

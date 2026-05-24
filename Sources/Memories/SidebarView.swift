@@ -177,6 +177,13 @@ struct DayCounterFooter: View {
             .foregroundStyle(Theme.ink2.opacity(0.7))
         }
         Spacer()
+        Button { state.showGitHubSetup = true } label: {
+          Image(systemName: state.githubToken != nil ? "cloud.fill" : "cloud")
+            .font(.system(size: 13))
+            .foregroundStyle(state.githubToken != nil ? Theme.accent : Theme.ink3)
+        }
+        .buttonStyle(.plain)
+        .help(state.githubToken != nil ? "Photos syncing to GitHub" : "Connect GitHub to sync photos")
       }
       .padding(.horizontal, 12)
       .padding(.vertical, 10)
