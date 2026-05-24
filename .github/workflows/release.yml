@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*.[0-9]*.[0-9]*'
+
+jobs:
+  release:
+    runs-on: macos-15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Patch version in source
+        run: |
+          sed -i '' \
+            's/let APP_VERSION = ".*"/let APP_VERSION = "${{ steps.version.outputs.version }}"/' \
+            Sources/Memories/Version.swift
+
+      - name: Build release binary
+        run: swift build -c release
+
+      - name: Assemble .app bundle
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          APP="Memories.app"
+          mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+          cp .build/release/Memories "$APP/Contents/MacOS/"
+
+          cat > "$APP/Contents/Info.plist" << PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleIdentifier</key>
+              <string>com.loiquan.memories</string>
+              <key>CFBundleName</key>
+              <string>Memories</string>
+              <key>CFBundleDisplayName</key>
+              <string>Memories</string>
+              <key>CFBundleExecutable</key>
+              <string>Memories</string>
+              <key>CFBundleVersion</key>
+              <string>${VERSION}</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${VERSION}</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+              <key>NSPrincipalClass</key>
+              <string>NSApplication</string>
+              <key>LSMinimumSystemVersion</key>
+              <string>14.0</string>
+          </dict>
+          </plist>
+          PLIST
+
+      - name: Ad-hoc sign
+        run: codesign --deep --force --sign - Memories.app
+
+      - name: Package as zip
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          zip -r "Memories-${VERSION}.zip" Memories.app
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          gh release create "${{ github.ref_name }}" \
+            "Memories-${VERSION}.zip" \
+            --title "Memories v${VERSION}" \
+            --generate-notes
