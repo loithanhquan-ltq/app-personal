@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { useRouter } from "next/navigation";
 import { ANNIVERSARY_IDS } from "@/data";
@@ -8,9 +9,53 @@ import { MemoryTile } from "@/components/shared/MemoryTile";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { PhotoSlot } from "@/components/shared/PhotoSlot";
 import Link from "next/link";
+import type { Memory } from "@/data/types";
 
 const MAX_W = 1100;
 const PAD = 36;
+
+function AnniversaryCard({ memory: m }: { memory: Memory }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <Link href={`/memory/${m.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+      <div
+        style={{
+          borderRadius: 12,
+          overflow: "hidden",
+          position: "relative",
+          height: 180,
+          cursor: "pointer",
+          transform: hovered ? "scale(1.025)" : "scale(1)",
+          boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.18)" : "0 2px 8px rgba(0,0,0,0.08)",
+          transition: "transform 0.18s ease-out, box-shadow 0.18s ease-out",
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        <PhotoSlot slotId={`hero-${m.id}`} height={180} borderRadius={0} width={300} />
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(20,12,6,0.75) 0%, rgba(20,12,6,0.1) 55%, transparent 100%)",
+        }} />
+        <div style={{
+          position: "absolute", top: 10, left: 10,
+          background: "rgba(0,0,0,0.42)", borderRadius: 6, padding: "2px 8px",
+          fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(255,255,255,0.85)",
+        }}>
+          {m.year}
+        </div>
+        <div style={{ position: "absolute", bottom: 14, left: 14, right: 14 }}>
+          <div style={{ fontFamily: "var(--font-serif)", fontSize: 20, fontStyle: "italic", fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>
+            {m.title}
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
+            {m.date}
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 export default function LibraryPage() {
   const content = useAppStore((s) => s.content);
@@ -132,27 +177,16 @@ export default function LibraryPage() {
       {/* Anniversaries */}
       <div style={{ marginBottom: 48 }}>
         <SectionHeader title={s.sectionAnniversaries} subtitle={s.sectionAnniversariesSub} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+          <div style={{ flex: 1, borderTop: "1.5px dashed rgba(164,74,42,0.3)" }} />
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--color-accent)", letterSpacing: "0.12em", whiteSpace: "nowrap" }}>
+            JUNE 9
+          </span>
+          <div style={{ flex: 1, borderTop: "1.5px dashed rgba(164,74,42,0.3)" }} />
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-          {anniversaries.map((m, i) => (
-            <Link key={m.id} href={`/memory/${m.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-              <div style={{
-                borderRadius: 12,
-                overflow: "hidden",
-                background: `linear-gradient(135deg, hsl(${354 - i * 10}, 55%, 72%), hsl(${354 - i * 10}, 40%, 60%))`,
-                padding: "20px 18px",
-                minHeight: 120,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-end",
-              }}>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.8)", letterSpacing: "0.08em", marginBottom: 6 }}>
-                  {m.date}
-                </div>
-                <div style={{ fontFamily: "var(--font-serif)", fontSize: 18, fontStyle: "italic", fontWeight: 600, color: "#fff" }}>
-                  {m.title}
-                </div>
-              </div>
-            </Link>
+          {anniversaries.map((m) => (
+            <AnniversaryCard key={m.id} memory={m} />
           ))}
         </div>
       </div>
