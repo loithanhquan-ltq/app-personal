@@ -44,7 +44,8 @@ export default function TimelinePage() {
       </div>
 
       {years.map((year) => (
-        <FadeIn key={year} style={{ marginBottom: 32 }}>
+        <div key={year} id={`year-${year}`}>
+        <FadeIn style={{ marginBottom: 32 }}>
           {/* Year mark */}
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
             <span style={{
@@ -66,6 +67,7 @@ export default function TimelinePage() {
             {byYear[year].map((m) => <MemoryWideCard key={m.id} memory={m} />)}
           </div>
         </FadeIn>
+        </div>
       ))}
     </div>
   );

@@ -14,15 +14,14 @@ export function DayCounterFooter() {
   const disconnectGithub = useAppStore((s) => s.disconnectGithub);
   const [days, setDays] = useState(0);
   const [animated, setAnimated] = useState(false);
-
-  const reduced = typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  const progress = Math.min(100, Math.max(0,
-    (Date.now() - START_MS) / (END_MS - START_MS) * 100
-  ));
+  const [reduced, setReduced] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    setProgress(Math.min(100, Math.max(0,
+      (Date.now() - START_MS) / (END_MS - START_MS) * 100
+    )));
     setDays(daysSinceStart());
     const id = setInterval(() => setDays(daysSinceStart()), 60000);
     return () => clearInterval(id);

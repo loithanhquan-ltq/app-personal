@@ -9,6 +9,7 @@ import { MemoryTile } from "@/components/shared/MemoryTile";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { PhotoSlot } from "@/components/shared/PhotoSlot";
 import { FadeIn } from "@/components/shared/FadeIn";
+import { JourneySlider } from "@/components/shared/JourneySlider";
 import Link from "next/link";
 import type { Memory } from "@/data/types";
 
@@ -146,23 +147,8 @@ export default function LibraryPage() {
           </span>
         </div>
 
-        {/* Year chips */}
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 20 }}>
-          {Object.entries(yearCounts).sort(([a], [b]) => Number(a) - Number(b)).map(([year, count]) => (
-            <div key={year} style={{
-              padding: "6px 14px",
-              borderRadius: 8,
-              background: "var(--color-card)",
-              border: "0.5px solid var(--color-rule)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              color: "var(--color-ink2)",
-            }}>
-              <span style={{ fontWeight: 600, color: "var(--color-ink)" }}>{year}</span>
-              <span style={{ marginLeft: 6, color: "var(--color-ink3)" }}>{s.memoriesCount(count)}</span>
-            </div>
-          ))}
-        </div>
+        {/* Journey slider */}
+        <JourneySlider yearCounts={yearCounts} animatedDays={animatedDays} totalDays={days} />
       </div>
 
       {/* Where it began */}
