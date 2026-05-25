@@ -22,25 +22,29 @@ function SideItem({
     <Link
       href={href}
       onClick={onClick}
+      className="side-item"
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "4px 8px",
+        padding: "5px 10px 5px 10px",
         borderRadius: 6,
         textDecoration: "none",
-        background: active ? "rgba(22,38,69,0.92)" : "transparent",
-        color: active ? "#fff" : "var(--color-ink)",
-        fontFamily: "var(--font-sans)",
-        fontSize: 13,
+        background: active ? "rgba(164,74,42,0.09)" : "transparent",
+        color: active ? "var(--color-accent)" : "var(--color-ink2)",
+        fontFamily: "var(--font-serif)",
+        fontSize: 13.5,
+        fontStyle: "italic",
         fontWeight: active ? 600 : 500,
-        transition: "background 0.12s",
+        borderLeft: active ? "2px solid var(--color-accent)" : "2px solid transparent",
+        marginLeft: -2,
+        transition: "background 0.12s, color 0.12s, border-color 0.12s",
         cursor: "pointer",
       }}
     >
       <span>{label}</span>
       {count !== undefined && (
-        <span style={{ fontSize: 11, opacity: 0.65, fontFamily: "var(--font-mono)" }}>{count}</span>
+        <span style={{ fontSize: 10, opacity: 0.55, fontFamily: "var(--font-mono)", fontStyle: "normal" }}>{count}</span>
       )}
     </Link>
   );
@@ -49,13 +53,15 @@ function SideItem({
 function SectionLabel({ label }: { label: string }) {
   return (
     <div style={{
-      fontFamily: "var(--font-mono)",
+      fontFamily: "var(--font-sans)",
       fontSize: 10,
       fontWeight: 600,
-      letterSpacing: "0.12em",
+      letterSpacing: "0.06em",
       textTransform: "uppercase",
       color: "var(--color-ink3)",
-      padding: "12px 8px 4px",
+      padding: "10px 8px 4px",
+      borderTop: "0.5px solid var(--color-rule)",
+      marginTop: 4,
     }}>
       {label}
     </div>
@@ -92,16 +98,21 @@ export function Sidebar() {
     }}>
       {/* Wordmark */}
       <div style={{
-        padding: "16px 16px 8px",
-        fontFamily: "var(--font-serif)",
-        fontSize: 18,
-        fontStyle: "italic",
-        fontWeight: 600,
-        color: "var(--color-ink)",
-        letterSpacing: "-0.03em",
+        padding: "16px 16px 10px",
         flexShrink: 0,
       }}>
-        {s.wordmark}
+        <div style={{
+          fontFamily: "var(--font-serif)",
+          fontSize: 19,
+          fontStyle: "italic",
+          fontWeight: 600,
+          color: "var(--color-ink)",
+          letterSpacing: "-0.03em",
+          lineHeight: 1,
+        }}>
+          {s.wordmark}
+          <span style={{ color: "var(--color-accent)", marginLeft: 6, fontSize: 16, fontStyle: "normal" }}>♡</span>
+        </div>
       </div>
 
       <nav style={{ flex: 1, overflowY: "auto", padding: "0 8px" }}>
@@ -119,36 +130,42 @@ export function Sidebar() {
         {content.chapters.map((c) => (
           <div
             key={c.id}
+            className="side-item"
             onClick={() => { setFilterChapter(c.id); router.push("/timeline"); }}
             style={{
               display: "flex",
               alignItems: "center",
               gap: 8,
-              padding: "4px 8px",
+              padding: "5px 10px 5px 10px",
               borderRadius: 6,
               cursor: "pointer",
-              background: chapterActive(c.id) ? "rgba(22,38,69,0.92)" : "transparent",
-              transition: "background 0.12s",
+              background: chapterActive(c.id) ? "rgba(164,74,42,0.09)" : "transparent",
+              color: chapterActive(c.id) ? "var(--color-accent)" : "var(--color-ink2)",
+              borderLeft: chapterActive(c.id) ? "2px solid var(--color-accent)" : "2px solid transparent",
+              marginLeft: -2,
+              transition: "background 0.12s, color 0.12s, border-color 0.12s",
             }}
           >
             <span style={{
-              width: 9,
-              height: 9,
-              borderRadius: 2,
+              width: 10,
+              height: 10,
+              borderRadius: 3,
               flexShrink: 0,
               background: `hsl(${c.hue}, 45%, 55%)`,
             }} />
             <span style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: 13,
+              fontFamily: "var(--font-serif)",
+              fontSize: 13.5,
+              fontStyle: "italic",
               fontWeight: 500,
-              color: chapterActive(c.id) ? "#fff" : "var(--color-ink)",
+              color: chapterActive(c.id) ? "var(--color-accent)" : "var(--color-ink2)",
               flex: 1,
             }}>{c.label}</span>
             <span style={{
-              fontSize: 11,
+              fontSize: 10,
               fontFamily: "var(--font-mono)",
-              color: chapterActive(c.id) ? "rgba(255,255,255,0.65)" : "var(--color-ink3)",
+              opacity: 0.55,
+              color: "var(--color-ink3)",
             }}>
               {content.memories.filter((m) => m.chapterId === c.id).length}
             </span>

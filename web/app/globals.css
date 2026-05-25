@@ -48,6 +48,9 @@ body {
 /* Nav tab hover — can't do :hover in inline styles */
 .nav-tab:hover { color: var(--color-ink2) !important; }
 
+/* Sidebar item hover */
+.side-item:hover { background: rgba(164,74,42,0.05) !important; }
+
 /* Scrollbar styling */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

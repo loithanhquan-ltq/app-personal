@@ -54,6 +54,8 @@ export function DayCounterFooter() {
           .day-counter-num { animation: none !important; }
         }
       `}</style>
+
+      {/* Day number */}
       <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
         <span
           className="day-counter-num"
@@ -81,20 +83,10 @@ export function DayCounterFooter() {
           {s.footerDays}
         </span>
       </div>
-      <div style={{
-        fontFamily: "var(--font-sans)",
-        fontSize: 11,
-        color: "var(--color-ink3)",
-        marginTop: 2,
-      }}>
-        {s.footerSince}
-      </div>
 
-      {/* Journey progress bar */}
-      <div style={{ marginTop: 12, marginBottom: 6 }}>
-        {/* Track */}
+      {/* Journey progress bar — directly below the number */}
+      <div style={{ marginTop: 10, marginBottom: 8 }}>
         <div style={{ position: "relative", height: 4, borderRadius: 2, background: "rgba(164,74,42,0.12)" }}>
-          {/* Fill */}
           <div style={{
             position: "absolute", left: 0, top: 0, bottom: 0,
             width: `${animated ? progress : 0}%`,
@@ -102,7 +94,6 @@ export function DayCounterFooter() {
             borderRadius: 2,
             transition: reduced ? "none" : "width 1.2s cubic-bezier(0.16,1,0.3,1)",
           }} />
-          {/* Today dot */}
           <div style={{
             position: "absolute",
             top: "50%",
@@ -116,7 +107,6 @@ export function DayCounterFooter() {
             animation: reduced ? "none" : "heartbeat 3.6s ease-in-out 2s infinite",
           }} />
         </div>
-        {/* Year labels */}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
           {[2022, 2023, 2024, 2025, 2026].map((y) => (
             <span key={y} style={{
@@ -131,10 +121,19 @@ export function DayCounterFooter() {
         </div>
       </div>
 
+      {/* Since text */}
+      <div style={{
+        fontFamily: "var(--font-sans)",
+        fontSize: 11,
+        color: "var(--color-ink3)",
+        marginBottom: 6,
+      }}>
+        {s.footerSince}
+      </div>
+
       <button
         onClick={() => githubToken ? disconnectGithub() : setShowGitHubSetup(true)}
         style={{
-          marginTop: 4,
           display: "flex",
           alignItems: "center",
           gap: 5,
