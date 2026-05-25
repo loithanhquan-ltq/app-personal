@@ -204,6 +204,7 @@ export const useAppStore = create<AppStore>()(
         const slotIds = [
           ...content.memories.map((m) => `hero-${m.id}`),
           ...content.places.map((p) => `place-${p.id}`),
+          ...content.people.map((p) => `portrait-${p.id}`),
         ];
         const updates: Record<string, string> = {};
         await Promise.all(

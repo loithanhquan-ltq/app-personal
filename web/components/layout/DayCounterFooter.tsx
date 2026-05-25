@@ -26,14 +26,32 @@ export function DayCounterFooter() {
       background: "rgba(164, 74, 42, 0.06)",
       flexShrink: 0,
     }}>
+      <style>{`
+        @keyframes heartbeat {
+          0%, 100% { transform: scale(1); }
+          14% { transform: scale(1.06); }
+          28% { transform: scale(1); }
+          42% { transform: scale(1.04); }
+          56% { transform: scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .day-counter-num { animation: none !important; }
+        }
+      `}</style>
       <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-        <span style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: 22,
-          fontWeight: 500,
-          color: "var(--color-accent)",
-          fontStyle: "italic",
-        }}>
+        <span
+          className="day-counter-num"
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: 22,
+            fontWeight: 500,
+            color: "var(--color-accent)",
+            fontStyle: "italic",
+            display: "inline-block",
+            animation: "heartbeat 3.6s ease-in-out infinite",
+            animationDelay: "2s",
+          }}
+        >
           {days.toLocaleString()}
         </span>
         <span style={{

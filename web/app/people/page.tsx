@@ -2,6 +2,7 @@
 
 import { useAppStore } from "@/store/useAppStore";
 import { Avatar } from "@/components/shared/Avatar";
+import { PhotoSlot } from "@/components/shared/PhotoSlot";
 import Link from "next/link";
 
 export default function PeoplePage() {
@@ -37,7 +38,9 @@ export default function PeoplePage() {
           gap: 40,
           alignItems: "center",
         }}>
-          <Avatar initials={mainPerson.initials} size={160} index={0} />
+          <div style={{ flexShrink: 0, width: 160, height: 200, borderRadius: 12, overflow: "hidden", boxShadow: "0 8px 28px rgba(164,74,42,0.22)" }}>
+            <PhotoSlot slotId="portrait-you" height={200} borderRadius={0} width={160} />
+          </div>
           <div>
             <h1 style={{ fontFamily: "var(--font-serif)", fontSize: 52, fontStyle: "italic", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 8px", letterSpacing: "-0.03em" }}>
               {mainPerson.name}

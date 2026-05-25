@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { useRouter } from "next/navigation";
 import { ANNIVERSARY_IDS } from "@/data";
@@ -57,6 +57,23 @@ function AnniversaryCard({ memory: m }: { memory: Memory }) {
   );
 }
 
+function useCountUp(target: number, duration = 1400) {
+  const [count, setCount] = useState(0);
+  const raf = useRef<number>(0);
+  useEffect(() => {
+    const start = performance.now();
+    function step(now: number) {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setCount(Math.round(eased * target));
+      if (p < 1) raf.current = requestAnimationFrame(step);
+    }
+    raf.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target, duration]);
+  return count;
+}
+
 export default function LibraryPage() {
   const content = useAppStore((s) => s.content);
   const userFavorites = useAppStore((s) => s.userFavorites);
@@ -64,6 +81,7 @@ export default function LibraryPage() {
   const router = useRouter();
   const s = content.strings;
   const days = daysSinceStart();
+  const animatedDays = useCountUp(days);
 
   const dayOne = content.memories.find((m) => m.id === "m01");
   const anniversaries = ANNIVERSARY_IDS.map((id) => content.memories.find((m) => m.id === id)).filter(Boolean) as typeof content.memories;
@@ -77,6 +95,20 @@ export default function LibraryPage() {
     <div style={{ maxWidth: MAX_W, margin: "0 auto", padding: `14px ${PAD}px 80px` }}>
       {/* Hero */}
       <div style={{ marginBottom: 48 }}>
+        {/* Handwritten opening line */}
+        <div style={{
+          fontFamily: "var(--font-hand)",
+          fontSize: 22,
+          color: "var(--color-accent)",
+          opacity: 0.75,
+          marginBottom: 16,
+          transform: "rotate(-0.6deg)",
+          transformOrigin: "left center",
+          letterSpacing: "0.01em",
+        }}>
+          {s.librarySubtitle}
+        </div>
+
         <div style={{
           fontFamily: "var(--font-mono)",
           fontSize: 11,
@@ -98,7 +130,7 @@ export default function LibraryPage() {
             letterSpacing: "-0.04em",
             lineHeight: 1,
           }}>
-            {days.toLocaleString()}
+            {animatedDays.toLocaleString()}
           </span>
           <span style={{
             fontFamily: "var(--font-serif)",
@@ -112,16 +144,6 @@ export default function LibraryPage() {
             &nbsp;{s.libraryHeadlineA}{s.libraryHeadlineB}
           </span>
         </div>
-        <p style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: 17,
-          fontStyle: "italic",
-          color: "var(--color-ink2)",
-          margin: 0,
-          maxWidth: 520,
-        }}>
-          {s.librarySubtitle}
-        </p>
 
         {/* Year chips */}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 20 }}>
