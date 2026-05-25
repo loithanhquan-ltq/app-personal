@@ -3,6 +3,7 @@
 import { useAppStore } from "@/store/useAppStore";
 import { Avatar } from "@/components/shared/Avatar";
 import { PhotoSlot } from "@/components/shared/PhotoSlot";
+import { FadeIn } from "@/components/shared/FadeIn";
 import Link from "next/link";
 
 export default function PeoplePage() {
@@ -20,7 +21,7 @@ export default function PeoplePage() {
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 36px 80px" }}>
+    <div className="page-root" style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 36px 80px" }}>
       {/* Header */}
       <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--color-ink3)", marginBottom: 32 }}>
         {s.peopleEyebrow}
@@ -78,11 +79,12 @@ export default function PeoplePage() {
         {s.peopleSubtitle}
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+      <div className="mob-1" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
         {castMembers.map((person, i) => {
           const mems = memoriesForPerson(person.id);
           return (
-            <div key={person.id} style={{
+            <FadeIn key={person.id} delay={i * 40}>
+            <div style={{
               background: "var(--color-card)",
               borderRadius: 12,
               padding: "20px",
@@ -119,6 +121,7 @@ export default function PeoplePage() {
                 </span>
               )}
             </div>
+            </FadeIn>
           );
         })}
       </div>

@@ -50,3 +50,41 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+/* ── Mobile ──────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  :root {
+    --sidebar-w: 0px;
+    --topbar-h: 48px;
+  }
+
+  /* Hide desktop sidebar */
+  .sidebar-root { display: none !important; }
+
+  /* TopBar nav: scroll horizontally, hide scrollbar */
+  .topbar-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  .topbar-nav::-webkit-scrollbar { display: none; }
+
+  /* Grid collapses */
+  .mob-2 { grid-template-columns: repeat(2, 1fr) !important; }
+  .mob-1 { grid-template-columns: 1fr !important; }
+
+  /* Reduce page horizontal padding */
+  .page-root { padding-left: 16px !important; padding-right: 16px !important; }
+
+  /* Hero flex → stack */
+  .hero-stack { flex-direction: column !important; }
+  .hero-stack .hero-photo { flex: none !important; width: 100% !important; height: 180px !important; }
+
+  /* Detail hero sizing */
+  .detail-hero { min-height: 300px !important; }
+  .detail-hero .detail-photo-slot { height: 300px !important; }
+
+  /* Reduce detail page padding */
+  .detail-body { padding-left: 16px !important; padding-right: 16px !important; }
+}

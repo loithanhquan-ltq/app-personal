@@ -4,6 +4,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { chapter } from "@/data";
 import { MemoryWideCard } from "@/components/shared/MemoryWideCard";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { FadeIn } from "@/components/shared/FadeIn";
 
 export default function TimelinePage() {
   const content = useAppStore((s) => s.content);
@@ -28,7 +29,7 @@ export default function TimelinePage() {
   const subtitle = ch ? ch.span : s.timelineAllRange;
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "24px 36px 80px" }}>
+    <div className="page-root" style={{ maxWidth: 1000, margin: "0 auto", padding: "24px 36px 80px" }}>
       <SectionHeader title={title} subtitle={subtitle} />
       <div style={{
         fontFamily: "var(--font-mono)",
@@ -43,7 +44,7 @@ export default function TimelinePage() {
       </div>
 
       {years.map((year) => (
-        <div key={year} style={{ marginBottom: 32 }}>
+        <FadeIn key={year} style={{ marginBottom: 32 }}>
           {/* Year mark */}
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
             <span style={{
@@ -64,7 +65,7 @@ export default function TimelinePage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {byYear[year].map((m) => <MemoryWideCard key={m.id} memory={m} />)}
           </div>
-        </div>
+        </FadeIn>
       ))}
     </div>
   );

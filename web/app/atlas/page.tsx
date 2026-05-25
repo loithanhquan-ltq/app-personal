@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useAppStore } from "@/store/useAppStore";
 import { PhotoSlot } from "@/components/shared/PhotoSlot";
+import { FadeIn } from "@/components/shared/FadeIn";
 import Link from "next/link";
 
 const VietnamMap = dynamic(() => import("@/components/atlas/VietnamMap"), { ssr: false, loading: () => (
@@ -22,7 +23,7 @@ export default function AtlasPage() {
   });
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 36px 80px" }}>
+    <div className="page-root" style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 36px 80px" }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--color-ink3)", marginBottom: 8 }}>
@@ -42,12 +43,13 @@ export default function AtlasPage() {
       </div>
 
       {/* Place cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+      <div className="mob-1" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
         {uniquePlaces.map((p) => {
           const mems = placeMemories[p.id] ?? [];
           const firstMem = mems[0];
           return (
-            <Link key={p.id} href={firstMem ? `/memory/${firstMem.id}` : "#"} style={{ textDecoration: "none", color: "inherit" }}>
+            <FadeIn key={p.id}>
+            <Link href={firstMem ? `/memory/${firstMem.id}` : "#"} style={{ textDecoration: "none", color: "inherit" }}>
               <div style={{
                 background: "var(--color-card)",
                 borderRadius: 12,
@@ -70,6 +72,7 @@ export default function AtlasPage() {
                 </div>
               </div>
             </Link>
+            </FadeIn>
           );
         })}
       </div>

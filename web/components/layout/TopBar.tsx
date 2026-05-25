@@ -71,7 +71,7 @@ export function TopBar() {
       flexShrink: 0,
     }}>
       {/* Nav tabs */}
-      <div style={{ display: "flex", gap: 2, alignItems: "center" }}>
+      <div className="topbar-nav" style={{ display: "flex", gap: 2, alignItems: "center" }}>
         <NavTab href="/library"  label={s.tabLibrary}  active={isActive("/library")} />
         <NavTabWithClick href="/timeline" label={s.tabTimeline} active={isActive("/timeline")} onClick={() => setFilterChapter(null)} />
         <NavTab href="/letters"  label={s.tabLetters}  active={isActive("/letters")} />

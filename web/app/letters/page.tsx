@@ -156,7 +156,7 @@ export default function LettersPage() {
       minHeight: "100%",
       background: `linear-gradient(180deg, var(--color-wood-dark) 0%, var(--color-wood-light) 100%)`,
     }}>
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "36px 36px 80px" }}>
+      <div className="page-root" style={{ maxWidth: 680, margin: "0 auto", padding: "36px 36px 80px" }}>
         {/* Header */}
         <div style={{ marginBottom: 48, textAlign: "center" }}>
           <div style={{

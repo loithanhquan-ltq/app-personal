@@ -8,6 +8,7 @@ import { daysSinceStart } from "@/lib/dateUtils";
 import { MemoryTile } from "@/components/shared/MemoryTile";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { PhotoSlot } from "@/components/shared/PhotoSlot";
+import { FadeIn } from "@/components/shared/FadeIn";
 import Link from "next/link";
 import type { Memory } from "@/data/types";
 
@@ -92,7 +93,7 @@ export default function LibraryPage() {
   content.memories.forEach((m) => { yearCounts[m.year] = (yearCounts[m.year] || 0) + 1; });
 
   return (
-    <div style={{ maxWidth: MAX_W, margin: "0 auto", padding: `14px ${PAD}px 80px` }}>
+    <div className="page-root" style={{ maxWidth: MAX_W, margin: "0 auto", padding: `14px ${PAD}px 80px` }}>
       {/* Hero */}
       <div style={{ marginBottom: 48 }}>
         {/* Handwritten opening line */}
@@ -166,7 +167,7 @@ export default function LibraryPage() {
 
       {/* Where it began */}
       {dayOne && (
-        <div style={{ marginBottom: 48 }}>
+        <FadeIn style={{ marginBottom: 48 }}>
           <SectionHeader title={s.sectionWhereItBegan} />
           <Link href={`/memory/${dayOne.id}`} style={{ textDecoration: "none", color: "inherit" }}>
             <div style={{
@@ -176,8 +177,8 @@ export default function LibraryPage() {
               border: "0.5px solid var(--color-rule)",
               display: "flex",
               gap: 0,
-            }}>
-              <div style={{ flex: "0 0 300px", height: 220 }}>
+            }} className="hero-stack">
+              <div className="hero-photo" style={{ flex: "0 0 300px", height: 220 }}>
                 <PhotoSlot slotId="hero-m01" height={220} borderRadius={0} width={300} />
               </div>
               <div style={{ flex: 1, padding: "28px 32px" }}>
@@ -193,11 +194,11 @@ export default function LibraryPage() {
               </div>
             </div>
           </Link>
-        </div>
+        </FadeIn>
       )}
 
       {/* Anniversaries */}
-      <div style={{ marginBottom: 48 }}>
+      <FadeIn delay={60} style={{ marginBottom: 48 }}>
         <SectionHeader title={s.sectionAnniversaries} subtitle={s.sectionAnniversariesSub} />
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <div style={{ flex: 1, borderTop: "1.5px dashed rgba(164,74,42,0.3)" }} />
@@ -206,15 +207,15 @@ export default function LibraryPage() {
           </span>
           <div style={{ flex: 1, borderTop: "1.5px dashed rgba(164,74,42,0.3)" }} />
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="mob-2" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           {anniversaries.map((m) => (
             <AnniversaryCard key={m.id} memory={m} />
           ))}
         </div>
-      </div>
+      </FadeIn>
 
       {/* Chapters */}
-      <div style={{ marginBottom: 48 }}>
+      <FadeIn delay={60} style={{ marginBottom: 48 }}>
         <SectionHeader title={s.sectionChaptersTitle} subtitle={s.sectionChaptersSub} />
         <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8 }}>
           {content.chapters.map((c) => {
@@ -247,25 +248,25 @@ export default function LibraryPage() {
             );
           })}
         </div>
-      </div>
+      </FadeIn>
 
       {/* Favorites */}
       {favMems.length > 0 && (
-        <div style={{ marginBottom: 48 }}>
+        <FadeIn delay={60} style={{ marginBottom: 48 }}>
           <SectionHeader title={s.sectionFavorites} subtitle={s.sectionFavoritesSub} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div className="mob-2" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             {favMems.map((m) => <MemoryTile key={m.id} memory={m} />)}
           </div>
-        </div>
+        </FadeIn>
       )}
 
       {/* Recent */}
-      <div style={{ marginBottom: 48 }}>
+      <FadeIn delay={60} style={{ marginBottom: 48 }}>
         <SectionHeader title={s.sectionRecent} />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        <div className="mob-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
           {recent.map((m) => <MemoryTile key={m.id} memory={m} />)}
         </div>
-      </div>
+      </FadeIn>
     </div>
   );
 }

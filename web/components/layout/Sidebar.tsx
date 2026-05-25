@@ -80,7 +80,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside style={{
+    <aside className="sidebar-root" style={{
       width: "var(--sidebar-w)",
       minWidth: "var(--sidebar-w)",
       height: "100%",

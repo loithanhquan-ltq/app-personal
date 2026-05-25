@@ -6,6 +6,7 @@ import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { Toast } from "./Toast";
 import { TokenSetupModal } from "@/components/github/TokenSetupModal";
+import { DedicationOverlay } from "./DedicationOverlay";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const syncRemotePhotos = useAppStore((s) => s.syncRemotePhotos);
@@ -40,6 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <Toast />
       <TokenSetupModal />
+      <DedicationOverlay />
     </div>
   );
 }

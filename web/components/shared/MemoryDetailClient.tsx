@@ -56,48 +56,60 @@ export function MemoryDetailClient({ id }: { id: string }) {
   const fav = isFavorite(mem.id);
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 36px 80px" }}>
-      <Link href="/timeline" style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        fontFamily: "var(--font-sans)", fontSize: 13, color: "var(--color-ink3)",
-        textDecoration: "none", marginBottom: 24,
-      }}>
-        ← {s.back}
-      </Link>
-
-      <div style={{ marginBottom: 28, borderRadius: 12, overflow: "hidden" }}>
-        <PhotoSlot slotId={`hero-${mem.id}`} height={340} borderRadius={12} width={720} />
+    <div style={{ maxWidth: 760, margin: "0 auto", paddingBottom: 80 }}>
+      {/* Back link */}
+      <div style={{ padding: "20px 36px 0" }}>
+        <Link href="/timeline" style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          fontFamily: "var(--font-sans)", fontSize: 13, color: "var(--color-ink3)",
+          textDecoration: "none",
+        }}>
+          ← {s.back}
+        </Link>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 500, color: "var(--color-ink3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          {mem.date}
+      {/* Cinematic hero */}
+      <div className="detail-hero" style={{ position: "relative", marginTop: 16, marginBottom: 0, borderRadius: 16, overflow: "hidden", minHeight: 480 }}>
+        <PhotoSlot slotId={`hero-${mem.id}`} height={480} borderRadius={0} width={760} />
+        {/* gradient overlay — title floats over bottom */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(15,8,3,0.88) 0%, rgba(15,8,3,0.35) 45%, transparent 75%)",
+          pointerEvents: "none",
+        }} />
+        {/* title + date over photo */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 32px 28px" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
+            {mem.date}
+          </div>
+          <h1 style={{
+            fontFamily: "var(--font-serif)", fontSize: "clamp(28px, 4vw, 44px)", fontStyle: "italic",
+            fontWeight: 600, color: "#fff", margin: "0 0 0", letterSpacing: "-0.02em", lineHeight: 1.15,
+          }}>
+            {mem.title}
+          </h1>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {/* actions — top right */}
+        <div style={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center", gap: 8 }}>
           {githubToken && mem.id.startsWith("um-") && (
             <Link href={`/add-memory?edit=${mem.id}`} style={{
-              fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--color-ink3)",
-              textDecoration: "none", padding: "4px 8px", borderRadius: 6,
-              border: "1px solid var(--color-rule)", background: "var(--color-card)",
+              fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,0.85)",
+              textDecoration: "none", padding: "5px 10px", borderRadius: 6,
+              background: "rgba(0,0,0,0.40)", backdropFilter: "blur(4px)",
             }}>
               Edit
             </Link>
           )}
           <button
             onClick={() => toggleFavorite(mem.id)}
-            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: fav ? "var(--color-accent)" : "var(--color-ink3)" }}
+            style={{ background: "rgba(0,0,0,0.38)", backdropFilter: "blur(4px)", border: "none", cursor: "pointer", fontSize: 22, color: fav ? "#f87171" : "rgba(255,255,255,0.75)", borderRadius: 8, padding: "4px 8px", lineHeight: 1 }}
           >
             {fav ? "♥" : "♡"}
           </button>
         </div>
       </div>
 
-      <h1 style={{
-        fontFamily: "var(--font-serif)", fontSize: 44, fontStyle: "italic", fontWeight: 600,
-        color: "var(--color-ink)", margin: "0 0 20px", letterSpacing: "-0.02em", lineHeight: 1.15,
-      }}>
-        {mem.title}
-      </h1>
+      <div className="detail-body" style={{ padding: "0 36px" }}>
 
       <div style={{
         display: "flex", flexWrap: "wrap", gap: 16, padding: "16px 0",
@@ -158,7 +170,7 @@ export function MemoryDetailClient({ id }: { id: string }) {
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--color-ink3)", marginBottom: 14 }}>
             {ch ? `${s.moreFrom} ${ch.label}` : s.moreFrom}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          <div className="mob-1" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
             {related.map((m) => <MemoryTile key={m.id} memory={m} />)}
           </div>
         </div>
@@ -184,6 +196,7 @@ export function MemoryDetailClient({ id }: { id: string }) {
             <div style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontStyle: "italic", color: "var(--color-ink)" }}>{nextMem.title}</div>
           </Link>
         ) : <div style={{ flex: 1 }} />}
+      </div>
       </div>
     </div>
   );
