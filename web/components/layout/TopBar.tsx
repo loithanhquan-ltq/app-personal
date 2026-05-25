@@ -7,23 +7,37 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Language } from "@/data";
 
-function NavTab({ href, label, active }: { href: string; label: string; active: boolean }) {
+function NavTab({
+  href,
+  label,
+  active,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+  onClick?: () => void;
+}) {
   return (
     <Link
       href={href}
+      onClick={onClick}
+      className="nav-tab"
       style={{
-        padding: "4px 12px",
-        borderRadius: 6,
+        padding: "6px 10px 4px",
         textDecoration: "none",
-        fontFamily: "var(--font-sans)",
-        fontSize: 13,
-        fontWeight: 500,
+        fontFamily: "var(--font-serif)",
+        fontSize: 14,
+        fontStyle: "italic",
+        fontWeight: active ? 600 : 500,
         color: active ? "var(--color-ink)" : "var(--color-ink3)",
-        background: active ? "var(--color-card)" : "transparent",
-        boxShadow: active ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-        border: active ? "0.5px solid var(--color-rule)" : "0.5px solid transparent",
-        transition: "all 0.12s",
+        borderBottom: active
+          ? "2px solid var(--color-accent)"
+          : "2px solid transparent",
+        transition: "color 0.15s, border-color 0.15s",
         whiteSpace: "nowrap",
+        letterSpacing: "0.01em",
+        lineHeight: 1.2,
       }}
     >
       {label}
@@ -73,7 +87,7 @@ export function TopBar() {
       {/* Nav tabs */}
       <div className="topbar-nav" style={{ display: "flex", gap: 2, alignItems: "center" }}>
         <NavTab href="/library"  label={s.tabLibrary}  active={isActive("/library")} />
-        <NavTabWithClick href="/timeline" label={s.tabTimeline} active={isActive("/timeline")} onClick={() => setFilterChapter(null)} />
+        <NavTab href="/timeline" label={s.tabTimeline} active={isActive("/timeline")} onClick={() => setFilterChapter(null)} />
         <NavTab href="/letters"  label={s.tabLetters}  active={isActive("/letters")} />
         <NavTab href="/atlas"    label={s.tabAtlas}    active={isActive("/atlas")} />
         <NavTab href="/people"   label={s.tabPeople}   active={isActive("/people")} />
@@ -128,31 +142,5 @@ export function TopBar() {
         ))}
       </div>
     </header>
-  );
-}
-
-// Augment NavTab to accept onClick
-function NavTabWithClick({ href, label, active, onClick }: { href: string; label: string; active: boolean; onClick?: () => void }) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      style={{
-        padding: "4px 12px",
-        borderRadius: 6,
-        textDecoration: "none",
-        fontFamily: "var(--font-sans)",
-        fontSize: 13,
-        fontWeight: 500,
-        color: active ? "var(--color-ink)" : "var(--color-ink3)",
-        background: active ? "var(--color-card)" : "transparent",
-        boxShadow: active ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-        border: active ? "0.5px solid var(--color-rule)" : "0.5px solid transparent",
-        transition: "all 0.12s",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {label}
-    </Link>
   );
 }

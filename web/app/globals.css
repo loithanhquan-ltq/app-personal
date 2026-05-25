@@ -45,6 +45,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Nav tab hover — can't do :hover in inline styles */
+.nav-tab:hover { color: var(--color-ink2) !important; }
+
 /* Scrollbar styling */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -62,6 +65,7 @@ body {
   .sidebar-root { display: none !important; }
 
   /* TopBar nav: scroll horizontally, hide scrollbar */
+  .topbar-nav::-webkit-scrollbar { display: none; }
   .topbar-nav {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
