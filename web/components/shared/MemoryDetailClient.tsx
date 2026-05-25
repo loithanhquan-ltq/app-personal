@@ -15,6 +15,7 @@ export function MemoryDetailClient({ id }: { id: string }) {
   const content = useAppStore((s) => s.content);
   const isFavorite = useAppStore((s) => s.isFavorite);
   const toggleFavorite = useAppStore((s) => s.toggleFavorite);
+  const githubToken = useAppStore((s) => s.githubToken);
   const s = content.strings;
 
   const mem = findMemory(content, id);
@@ -72,12 +73,23 @@ export function MemoryDetailClient({ id }: { id: string }) {
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 500, color: "var(--color-ink3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
           {mem.date}
         </div>
-        <button
-          onClick={() => toggleFavorite(mem.id)}
-          style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: fav ? "var(--color-accent)" : "var(--color-ink3)" }}
-        >
-          {fav ? "♥" : "♡"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {githubToken && mem.id.startsWith("um-") && (
+            <Link href={`/add-memory?edit=${mem.id}`} style={{
+              fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--color-ink3)",
+              textDecoration: "none", padding: "4px 8px", borderRadius: 6,
+              border: "1px solid var(--color-rule)", background: "var(--color-card)",
+            }}>
+              Edit
+            </Link>
+          )}
+          <button
+            onClick={() => toggleFavorite(mem.id)}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: fav ? "var(--color-accent)" : "var(--color-ink3)" }}
+          >
+            {fav ? "♥" : "♡"}
+          </button>
+        </div>
       </div>
 
       <h1 style={{

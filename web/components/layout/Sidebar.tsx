@@ -68,6 +68,7 @@ export function Sidebar() {
   const content = useAppStore((s) => s.content);
   const filterChapter = useAppStore((s) => s.filterChapter);
   const setFilterChapter = useAppStore((s) => s.setFilterChapter);
+  const githubToken = useAppStore((s) => s.githubToken);
   const s = content.strings;
 
   function isActive(path: string) {
@@ -109,6 +110,9 @@ export function Sidebar() {
         <SideItem href="/library" label={s.sideAll} active={isActive("/library") && !filterChapter} />
         <SideItem href="/letters" label={s.sideLetters} active={isActive("/letters")} />
         <SideItem href="/library" label={s.sideFavorites} active={false} />
+        {githubToken && (
+          <SideItem href="/add-memory" label={`+ ${s.newMemory}`} active={isActive("/add-memory")} />
+        )}
 
         {/* Chapters */}
         <SectionLabel label={s.sectionChapters} />

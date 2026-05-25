@@ -4,7 +4,8 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { getContent } from "@/data";
 import { rawURL, upload, validate, compressToJpeg } from "@/lib/githubPhotos";
-import type { Language, Content } from "@/data";
+import { readUserMemories, writeUserMemories, triggerRebuild } from "@/lib/githubMemories";
+import type { Language, Content, Memory } from "@/data";
 
 interface AppStore {
   language: Language;
@@ -18,8 +19,12 @@ interface AppStore {
   showGitHubSetup: boolean;
   uploadingSlots: string[];
   uploadErrors: Record<string, string>;
+  userMemories: Memory[];
 
   setLanguage: (l: Language) => void;
+  syncUserMemories: () => Promise<void>;
+  saveUserMemory: (mem: Memory) => Promise<void>;
+  deleteUserMemory: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
   showToast: (msg: string) => void;
@@ -32,6 +37,11 @@ interface AppStore {
   setQuery: (q: string) => void;
   setShowGitHubSetup: (show: boolean) => void;
   syncRemotePhotos: () => Promise<void>;
+}
+
+function mergeMemories(base: Memory[], user: Memory[]): Memory[] {
+  const userIds = new Set(user.map((m) => m.id));
+  return [...base.filter((m) => !userIds.has(m.id)), ...user];
 }
 
 export const useAppStore = create<AppStore>()(
@@ -48,9 +58,62 @@ export const useAppStore = create<AppStore>()(
       showGitHubSetup: false,
       uploadingSlots: [],
       uploadErrors: {},
+      userMemories: [],
 
       setLanguage: (l) => {
-        set({ language: l, content: getContent(l) });
+        const userMems = get().userMemories;
+        const base = getContent(l);
+        set({
+          language: l,
+          content: {
+            ...base,
+            memories: mergeMemories(base.memories, userMems),
+          },
+        });
+      },
+
+      syncUserMemories: async () => {
+        const mems = await readUserMemories();
+        set((s) => ({
+          userMemories: mems,
+          content: {
+            ...s.content,
+            memories: mergeMemories(getContent(s.language).memories, mems),
+          },
+        }));
+      },
+
+      saveUserMemory: async (mem) => {
+        const { githubToken, userMemories } = get();
+        if (!githubToken) throw new Error("No token");
+        const existing = userMemories.find((m) => m.id === mem.id);
+        const updated = existing
+          ? userMemories.map((m) => (m.id === mem.id ? mem : m))
+          : [...userMemories, mem];
+        await writeUserMemories(updated, githubToken);
+        set((s) => ({
+          userMemories: updated,
+          content: {
+            ...s.content,
+            memories: mergeMemories(getContent(s.language).memories, updated),
+          },
+        }));
+        await triggerRebuild(githubToken).catch(() => null);
+      },
+
+      deleteUserMemory: async (id) => {
+        const { githubToken, userMemories } = get();
+        if (!githubToken) throw new Error("No token");
+        const updated = userMemories.filter((m) => m.id !== id);
+        await writeUserMemories(updated, githubToken);
+        set((s) => ({
+          userMemories: updated,
+          content: {
+            ...s.content,
+            memories: mergeMemories(getContent(s.language).memories, updated),
+          },
+        }));
+        await triggerRebuild(githubToken).catch(() => null);
       },
 
       toggleFavorite: (id) => {

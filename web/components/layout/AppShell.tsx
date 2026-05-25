@@ -9,12 +9,14 @@ import { TokenSetupModal } from "@/components/github/TokenSetupModal";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const syncRemotePhotos = useAppStore((s) => s.syncRemotePhotos);
+  const syncUserMemories = useAppStore((s) => s.syncUserMemories);
   const setLanguage = useAppStore((s) => s.setLanguage);
   const language = useAppStore((s) => s.language);
 
   useEffect(() => {
     syncRemotePhotos();
-  }, [syncRemotePhotos]);
+    syncUserMemories();
+  }, [syncRemotePhotos, syncUserMemories]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
