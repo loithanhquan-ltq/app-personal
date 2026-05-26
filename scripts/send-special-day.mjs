@@ -3,7 +3,6 @@
 // Env:   GMAIL_USER  — your Gmail address (loithanhquan@gmail.com)
 //        GMAIL_PASS  — Gmail App Password (16-char, from myaccount.google.com → Security → App passwords)
 //        HER_EMAIL   — recipient (default: hokhoamaiquynh12@gmail.com)
-// test
 
 import nodemailer from "../web/node_modules/nodemailer/lib/nodemailer.js";
 
