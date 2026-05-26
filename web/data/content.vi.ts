@@ -147,6 +147,32 @@ export const vietnamese: Content = {
     searchResults: (n) => `${n} kết quả`,
     searchResultsFor: (q) => `Kết quả cho « ${q} »`,
     searchEmpty: "Chưa có gì. Thử một năm, một nơi, hoặc một người.",
+
+    onThisDayLabel: "Ngày này năm xưa",
+    onThisDayYearsAgo: (n) => `${n} năm trước`,
+
+    reactionConnectPrompt: "Kết nối GitHub để lưu cảm xúc",
+
+    sectionReflections: "Nhìn lại",
+    sideStats: "Tổng kết năm",
+    sideAnniversaryCard: "Thiệp kỷ niệm",
+
+    statsHeadline: "Câu chuyện của mình qua con số",
+    statsEyebrow: "Tổng kết năm",
+    statsMemoriesPerMonth: "Kỷ niệm theo tháng",
+    statsTopPlaces: "Những nơi đã đến",
+    statsTopPeople: "Người trong câu chuyện",
+    statsTitleCloud: "Những từ hay dùng",
+    statsPhotoCollage: "Tất cả ảnh",
+
+    cardPickMemory: "Chọn một kỷ niệm",
+    cardCustomMessage: "Thêm lời nhắn (tuỳ chọn)",
+    cardDownload: "Tải thiệp",
+    cardPreview: "Xem trước",
+    cardPlaceholder: "Viết điều gì đó cho em…",
+    cardTemplateMinimal: "Tối giản",
+    cardTemplatePhotoHeavy: "Nặng ảnh",
+    cardTemplateQuote: "Trích dẫn",
   },
   chapters: [
     { id: "beginning", label: "Khởi đầu", span: "Tháng 6 – tháng 8, 2022",        hue: 18 },

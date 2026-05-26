@@ -148,6 +148,32 @@ export const english: Content = {
     searchResults: (n) => n === 1 ? "1 result" : `${n} results`,
     searchResultsFor: (q) => `Results for "${q}"`,
     searchEmpty: "Nothing yet. Try a year, a place, or a person.",
+
+    onThisDayLabel: "On this day",
+    onThisDayYearsAgo: (n) => n === 1 ? "one year ago" : `${n} years ago`,
+
+    reactionConnectPrompt: "Connect GitHub to save reactions",
+
+    sectionReflections: "Reflections",
+    sideStats: "Year in review",
+    sideAnniversaryCard: "Anniversary card",
+
+    statsHeadline: "Our story in numbers",
+    statsEyebrow: "A year in review",
+    statsMemoriesPerMonth: "Memories by month",
+    statsTopPlaces: "Places we returned to",
+    statsTopPeople: "People in the story",
+    statsTitleCloud: "Words we kept using",
+    statsPhotoCollage: "Every photo",
+
+    cardPickMemory: "Choose a memory",
+    cardCustomMessage: "Add a message (optional)",
+    cardDownload: "Download card",
+    cardPreview: "Preview",
+    cardPlaceholder: "Write something for her…",
+    cardTemplateMinimal: "Minimal",
+    cardTemplatePhotoHeavy: "Photo-heavy",
+    cardTemplateQuote: "Quote-centered",
   },
   chapters: [
     { id: "beginning", label: "Beginning",   span: "June – Aug 2022",     hue: 18 },

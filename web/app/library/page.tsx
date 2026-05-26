@@ -11,6 +11,7 @@ import { SectionHeader } from "@/components/shared/SectionHeader";
 import { PhotoSlot } from "@/components/shared/PhotoSlot";
 import { FadeIn } from "@/components/shared/FadeIn";
 import { JourneySlider } from "@/components/shared/JourneySlider";
+import { OnThisDay } from "@/components/shared/OnThisDay";
 import Link from "next/link";
 import type { Memory } from "@/data/types";
 
@@ -184,6 +185,9 @@ export default function LibraryPage() {
         {/* Journey slider */}
         <JourneySlider yearCounts={yearCounts} animatedDays={animatedDays} totalDays={days} />
       </motion.div>
+
+      {/* On this day */}
+      <OnThisDay />
 
       {/* Where it began */}
       {dayOne && (

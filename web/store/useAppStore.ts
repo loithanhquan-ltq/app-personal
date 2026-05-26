@@ -5,6 +5,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { getContent } from "@/data";
 import { rawURL, upload, validate, compressToJpeg } from "@/lib/githubPhotos";
 import { readUserMemories, writeUserMemories, triggerRebuild } from "@/lib/githubMemories";
+import { fetchReactions, commitReactions, type ReactionMap } from "@/lib/githubReactions";
 import type { Language, Content, Memory } from "@/data";
 
 interface AppStore {
@@ -20,6 +21,7 @@ interface AppStore {
   uploadingSlots: string[];
   uploadErrors: Record<string, string>;
   userMemories: Memory[];
+  reactions: ReactionMap;
 
   setLanguage: (l: Language) => void;
   syncUserMemories: () => Promise<void>;
@@ -37,6 +39,8 @@ interface AppStore {
   setQuery: (q: string) => void;
   setShowGitHubSetup: (show: boolean) => void;
   syncRemotePhotos: () => Promise<void>;
+  syncReactions: () => Promise<void>;
+  addReaction: (memId: string, emoji: string) => Promise<void>;
 }
 
 function mergeMemories(base: Memory[], user: Memory[]): Memory[] {
@@ -59,6 +63,7 @@ export const useAppStore = create<AppStore>()(
       uploadingSlots: [],
       uploadErrors: {},
       userMemories: [],
+      reactions: {},
 
       setLanguage: (l) => {
         const userMems = get().userMemories;
@@ -187,6 +192,7 @@ export const useAppStore = create<AppStore>()(
         if (ok) {
           set({ githubToken: token, showGitHubSetup: false });
           get().syncRemotePhotos();
+          get().syncReactions();
         }
         return ok;
       },
@@ -201,8 +207,17 @@ export const useAppStore = create<AppStore>()(
 
       syncRemotePhotos: async () => {
         const { content } = get();
+        const gallerySlots: string[] = [];
+        content.memories.forEach((m) => {
+          if (m.photoCount && m.photoCount > 1) {
+            for (let i = 1; i < m.photoCount; i++) {
+              gallerySlots.push(`gallery-${m.id}-${i}`);
+            }
+          }
+        });
         const slotIds = [
           ...content.memories.map((m) => `hero-${m.id}`),
+          ...gallerySlots,
           ...content.places.map((p) => `place-${p.id}`),
           ...content.people.map((p) => `portrait-${p.id}`),
         ];
@@ -215,6 +230,41 @@ export const useAppStore = create<AppStore>()(
           })
         );
         set((s) => ({ photos: { ...updates, ...s.photos } }));
+      },
+
+      syncReactions: async () => {
+        const data = await fetchReactions();
+        set({ reactions: data });
+      },
+
+      addReaction: async (memId, emoji) => {
+        const { reactions, githubToken, showToast } = get();
+        const memReactions = reactions[memId] ?? {};
+        const updated: ReactionMap = {
+          ...reactions,
+          [memId]: { ...memReactions, [emoji]: (memReactions[emoji] ?? 0) + 1 },
+        };
+        set({ reactions: updated });
+
+        if (githubToken) {
+          try {
+            await commitReactions(updated, githubToken);
+          } catch {
+            // retry once with fresh fetch
+            try {
+              const fresh = await fetchReactions();
+              const freshMem = fresh[memId] ?? {};
+              const retried: ReactionMap = {
+                ...fresh,
+                [memId]: { ...freshMem, [emoji]: (freshMem[emoji] ?? 0) + 1 },
+              };
+              await commitReactions(retried, githubToken);
+              set({ reactions: retried });
+            } catch {
+              showToast("Could not save reaction — try again");
+            }
+          }
+        }
       },
     }),
     {

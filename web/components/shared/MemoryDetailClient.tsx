@@ -10,6 +10,8 @@ import { PhotoSlot } from "./PhotoSlot";
 import { ChipView } from "./ChipView";
 import { Avatar } from "./Avatar";
 import { MemoryTile } from "./MemoryTile";
+import { MemoryGallery } from "./MemoryGallery";
+import { ReactionBar } from "./ReactionBar";
 
 export function MemoryDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -146,6 +148,11 @@ export function MemoryDetailClient({ id }: { id: string }) {
         </div>
       </div>
 
+      {/* Multi-photo gallery */}
+      <div style={{ padding: "0 36px" }}>
+        <MemoryGallery memory={mem} />
+      </div>
+
       <div className="detail-body" style={{ padding: "0 36px" }}>
 
       <div style={{
@@ -174,7 +181,7 @@ export function MemoryDetailClient({ id }: { id: string }) {
         )}
       </div>
 
-      <div style={{ marginBottom: 32 }}>
+      <div style={{ marginBottom: 8 }}>
         {bodyParagraphs.map((p, i) => (
           <p key={i} style={{
             fontFamily: "var(--font-serif)", fontSize: 17, lineHeight: 1.8, color: "var(--color-ink)",
@@ -184,6 +191,8 @@ export function MemoryDetailClient({ id }: { id: string }) {
           </p>
         ))}
       </div>
+
+      <ReactionBar memId={mem.id} />
 
       {people.length > 0 && (
         <div style={{ marginBottom: 32 }}>

@@ -34,6 +34,8 @@ export interface Memory {
   tags: string[];
   body: string;
   favorite: boolean;
+  photoCount?: number;
+  hasAudio?: boolean;
 }
 
 export interface Letter {
@@ -119,6 +121,32 @@ export interface Strings {
   searchResults: (n: number) => string;
   searchResultsFor: (q: string) => string;
   searchEmpty: string;
+
+  onThisDayLabel: string;
+  onThisDayYearsAgo: (n: number) => string;
+
+  reactionConnectPrompt: string;
+
+  sectionReflections: string;
+  sideStats: string;
+  sideAnniversaryCard: string;
+
+  statsHeadline: string;
+  statsEyebrow: string;
+  statsMemoriesPerMonth: string;
+  statsTopPlaces: string;
+  statsTopPeople: string;
+  statsTitleCloud: string;
+  statsPhotoCollage: string;
+
+  cardPickMemory: string;
+  cardCustomMessage: string;
+  cardDownload: string;
+  cardPreview: string;
+  cardPlaceholder: string;
+  cardTemplateMinimal: string;
+  cardTemplatePhotoHeavy: string;
+  cardTemplateQuote: string;
 }
 
 export interface Content {

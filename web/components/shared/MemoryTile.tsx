@@ -53,6 +53,16 @@ export function MemoryTile({ memory }: { memory: Memory }) {
         >
           <div style={{ height: 160, position: "relative", pointerEvents: "none" }}>
             <PhotoSlot slotId={`hero-${memory.id}`} height={160} borderRadius={0} width={300} />
+            {(memory.photoCount ?? 0) > 1 && (
+              <div style={{
+                position: "absolute", top: 7, right: 7,
+                background: "rgba(0,0,0,0.55)", borderRadius: 5, padding: "2px 6px",
+                fontFamily: "var(--font-mono)", fontSize: 9, color: "#fff", fontWeight: 600,
+                letterSpacing: "0.04em",
+              }}>
+                +{(memory.photoCount ?? 1) - 1}
+              </div>
+            )}
           </div>
           <div style={{ padding: "10px 12px 12px" }}>
             <div style={{

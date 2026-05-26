@@ -46,22 +46,27 @@ export default function VietnamMap({ places, memories }: Props) {
         positions={routeCoords}
         pathOptions={{ color: "#a44a2a", opacity: 0.55, dashArray: "5 5", weight: 2 }}
       />
-      {uniquePlaces.map((p) => (
-        <CircleMarker
-          key={p.id}
-          center={[p.lat, p.lng]}
-          radius={8}
-          pathOptions={{ fillColor: "#a44a2a", fillOpacity: 0.85, color: "#fff", weight: 2 }}
-        >
-          <Popup>
-            <div style={{ fontFamily: "system-ui", fontSize: 13 }}>
-              <strong>{p.label}</strong><br />
-              <span style={{ color: "#888", fontSize: 11 }}>{p.country}</span><br />
-              <span style={{ fontSize: 11 }}>{memsByPlace[p.id] ?? 0} memories</span>
-            </div>
-          </Popup>
-        </CircleMarker>
-      ))}
+      {uniquePlaces.map((p) => {
+        const count = memsByPlace[p.id] ?? 0;
+        const radius = count === 0 ? 5 : Math.min(5 + count * 2.5, 16);
+        const opacity = count === 0 ? 0.35 : 0.85;
+        return (
+          <CircleMarker
+            key={p.id}
+            center={[p.lat, p.lng]}
+            radius={radius}
+            pathOptions={{ fillColor: "#a44a2a", fillOpacity: opacity, color: "#fff", weight: 2 }}
+          >
+            <Popup>
+              <div style={{ fontFamily: "system-ui", fontSize: 13 }}>
+                <strong>{p.label}</strong><br />
+                <span style={{ color: "#888", fontSize: 11 }}>{p.country}</span><br />
+                <span style={{ fontSize: 11 }}>{count} {count === 1 ? "memory" : "memories"}</span>
+              </div>
+            </Popup>
+          </CircleMarker>
+        );
+      })}
     </MapContainer>
   );
 }

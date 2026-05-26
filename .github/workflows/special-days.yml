@@ -1,0 +1,51 @@
+name: Special Days
+
+on:
+  schedule:
+    - cron: "0 1 25 4 *" # April 25, 01:00 UTC = 08:00 AM Vietnam (UTC+7)
+    - cron: "0 1 9 6 *"  # June 9,   01:00 UTC = 08:00 AM Vietnam (UTC+7)
+  workflow_dispatch:
+    inputs:
+      event:
+        description: "Which event to send (test, birthday, anniversary)"
+        required: true
+        default: "test"
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: cd web && npm ci
+
+      - name: Detect event type
+        id: detect
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "event=${{ github.event.inputs.event }}" >> $GITHUB_OUTPUT
+          else
+            MONTH=$(date -u +%-m)
+            DAY=$(date -u +%-d)
+            if [ "$MONTH" = "4" ] && [ "$DAY" = "25" ]; then
+              echo "event=birthday" >> $GITHUB_OUTPUT
+            elif [ "$MONTH" = "6" ] && [ "$DAY" = "9" ]; then
+              echo "event=anniversary" >> $GITHUB_OUTPUT
+            else
+              echo "event=test" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Send email
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+          HER_EMAIL: ${{ secrets.HER_EMAIL }}
+        run: node scripts/send-special-day.mjs --event ${{ steps.detect.outputs.event }}

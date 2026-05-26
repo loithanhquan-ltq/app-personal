@@ -147,6 +147,32 @@ export const french: Content = {
     searchResults: (n) => n === 1 ? "1 résultat" : `${n} résultats`,
     searchResultsFor: (q) => `Résultats pour « ${q} »`,
     searchEmpty: "Rien pour l'instant. Essaie une année, un lieu ou une personne.",
+
+    onThisDayLabel: "Ce jour-là",
+    onThisDayYearsAgo: (n) => n === 1 ? "il y a un an" : `il y a ${n} ans`,
+
+    reactionConnectPrompt: "Connecter GitHub pour sauvegarder les réactions",
+
+    sectionReflections: "Réflexions",
+    sideStats: "Bilan annuel",
+    sideAnniversaryCard: "Carte d'anniversaire",
+
+    statsHeadline: "Notre histoire en chiffres",
+    statsEyebrow: "Un bilan annuel",
+    statsMemoriesPerMonth: "Souvenirs par mois",
+    statsTopPlaces: "Lieux où on est retournés",
+    statsTopPeople: "Personnes dans l'histoire",
+    statsTitleCloud: "Mots qu'on a gardés",
+    statsPhotoCollage: "Toutes les photos",
+
+    cardPickMemory: "Choisir un souvenir",
+    cardCustomMessage: "Ajouter un message (optionnel)",
+    cardDownload: "Télécharger la carte",
+    cardPreview: "Aperçu",
+    cardPlaceholder: "Écrire quelque chose pour elle…",
+    cardTemplateMinimal: "Minimal",
+    cardTemplatePhotoHeavy: "Photo-centrée",
+    cardTemplateQuote: "Citation",
   },
   chapters: [
     { id: "beginning", label: "Le début",   span: "Juin – août 2022",          hue: 18 },

@@ -12,13 +12,15 @@ import { PageTransition } from "./PageTransition";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const syncRemotePhotos = useAppStore((s) => s.syncRemotePhotos);
   const syncUserMemories = useAppStore((s) => s.syncUserMemories);
+  const syncReactions = useAppStore((s) => s.syncReactions);
   const setLanguage = useAppStore((s) => s.setLanguage);
   const language = useAppStore((s) => s.language);
 
   useEffect(() => {
     syncRemotePhotos();
     syncUserMemories();
-  }, [syncRemotePhotos, syncUserMemories]);
+    syncReactions();
+  }, [syncRemotePhotos, syncUserMemories, syncReactions]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

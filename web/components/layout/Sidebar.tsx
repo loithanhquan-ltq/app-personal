@@ -184,6 +184,11 @@ export function Sidebar() {
         {/* People */}
         <SectionLabel label={s.sectionPeople} />
         <SideItem href="/people" label={s.sideEveryone} active={isActive("/people")} />
+
+        {/* Reflections */}
+        <SectionLabel label={s.sectionReflections} />
+        <SideItem href="/stats" label={s.sideStats} active={isActive("/stats")} />
+        <SideItem href="/anniversary-card" label={s.sideAnniversaryCard} active={isActive("/anniversary-card")} />
       </nav>
 
       <DayCounterFooter />
