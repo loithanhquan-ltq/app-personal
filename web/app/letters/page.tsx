@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAppStore } from "@/store/useAppStore";
+
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.18 } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 36 },
+  show:   { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 220, damping: 24 } },
+};
 
 function RuledLines({ height }: { height: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -150,6 +161,7 @@ function LetterCard({ letter, index, waxText }: { letter: { id: string; date: st
 export default function LettersPage() {
   const content = useAppStore((s) => s.content);
   const s = content.strings;
+  const reduced = useReducedMotion();
 
   return (
     <div style={{
@@ -196,28 +208,19 @@ export default function LettersPage() {
         </div>
 
         {/* Letters */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
+        <motion.div
+          variants={reduced ? undefined : containerVariants}
+          initial={reduced ? undefined : "hidden"}
+          animate={reduced ? undefined : "show"}
+          style={{ display: "flex", flexDirection: "column", gap: 48 }}
+        >
           {content.letters.map((letter, i) => (
-            <LetterCard key={letter.id} letter={letter} index={i} waxText={s.waxSeal} />
+            <motion.div key={letter.id} variants={reduced ? undefined : cardVariants}>
+              <LetterCard letter={letter} index={i} waxText={s.waxSeal} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Write another */}
-        <div style={{ marginTop: 48, textAlign: "center" }}>
-          <button style={{
-            padding: "12px 28px",
-            borderRadius: 8,
-            border: "1.5px dashed rgba(80,55,30,0.35)",
-            background: "transparent",
-            fontFamily: "var(--font-serif)",
-            fontSize: 15,
-            fontStyle: "italic",
-            color: "rgba(80,55,30,0.65)",
-            cursor: "pointer",
-          }}>
-            {s.lettersWriteAnother}
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { DayCounterFooter } from "./DayCounterFooter";
@@ -72,6 +73,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const content = useAppStore((s) => s.content);
+  const reduced = useReducedMotion();
   const filterChapter = useAppStore((s) => s.filterChapter);
   const setFilterChapter = useAppStore((s) => s.setFilterChapter);
   const githubToken = useAppStore((s) => s.githubToken);
@@ -111,7 +113,11 @@ export function Sidebar() {
           lineHeight: 1,
         }}>
           {s.wordmark}
-          <span style={{ color: "var(--color-accent)", marginLeft: 6, fontSize: 16, fontStyle: "normal" }}>♡</span>
+          <motion.span
+            animate={reduced ? {} : { y: [0, -3, 0] }}
+            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.4 }}
+            style={{ color: "var(--color-accent)", marginLeft: 6, fontSize: 16, fontStyle: "normal", display: "inline-block" }}
+          >♡</motion.span>
         </div>
       </div>
 
@@ -120,7 +126,6 @@ export function Sidebar() {
         <SectionLabel label={s.sectionLibrary} />
         <SideItem href="/library" label={s.sideAll} active={isActive("/library") && !filterChapter} />
         <SideItem href="/letters" label={s.sideLetters} active={isActive("/letters")} />
-        <SideItem href="/library" label={s.sideFavorites} active={false} />
         {githubToken && (
           <SideItem href="/add-memory" label={`+ ${s.newMemory}`} active={isActive("/add-memory")} />
         )}

@@ -7,6 +7,7 @@ import { TopBar } from "./TopBar";
 import { Toast } from "./Toast";
 import { TokenSetupModal } from "@/components/github/TokenSetupModal";
 import { DedicationOverlay } from "./DedicationOverlay";
+import { PageTransition } from "./PageTransition";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const syncRemotePhotos = useAppStore((s) => s.syncRemotePhotos);
@@ -36,7 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <TopBar />
         <main style={{ flex: 1, overflowY: "auto", position: "relative" }}>
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
       </div>
       <Toast />

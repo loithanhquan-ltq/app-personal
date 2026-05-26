@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { motion } from "framer-motion";
 import { useAppStore } from "@/store/useAppStore";
 import { place, chapter } from "@/data";
 import type { Memory } from "@/data";
@@ -9,28 +9,23 @@ import { PhotoSlot } from "./PhotoSlot";
 import { ChipView } from "./ChipView";
 
 export function MemoryWideCard({ memory }: { memory: Memory }) {
-  const [hovered, setHovered] = useState(false);
   const content = useAppStore((s) => s.content);
   const pl = place(content, memory.placeId);
   const ch = chapter(content, memory.chapterId);
 
   return (
-    <Link
-      href={`/memory/${memory.id}`}
-      style={{ textDecoration: "none", color: "inherit" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div style={{
-        display: "flex",
-        gap: 20,
-        padding: "16px 20px",
-        borderRadius: 10,
-        background: hovered ? "var(--color-card)" : "transparent",
-        border: `0.5px solid ${hovered ? "var(--color-rule)" : "transparent"}`,
-        transition: "background 0.12s ease-out, border-color 0.12s ease-out",
-        alignItems: "flex-start",
-      }}>
+    <Link href={`/memory/${memory.id}`} style={{ textDecoration: "none", color: "inherit", display: "block" }}>
+      <motion.div
+        whileHover={{ y: -2, backgroundColor: "var(--color-card)", boxShadow: "0 5px 18px -3px rgba(0,0,0,0.10)" }}
+        transition={{ type: "spring", stiffness: 350, damping: 26 }}
+        style={{
+          display: "flex",
+          gap: 20,
+          padding: "16px 20px",
+          borderRadius: 10,
+          border: "0.5px solid var(--color-rule)",
+          alignItems: "flex-start",
+        }}>
         {/* Photo */}
         <div style={{ width: 140, height: 100, flexShrink: 0, borderRadius: 8, overflow: "hidden", pointerEvents: "none" }}>
           <PhotoSlot slotId={`hero-${memory.id}`} height={100} borderRadius={8} width={140} />
@@ -80,7 +75,7 @@ export function MemoryWideCard({ memory }: { memory: Memory }) {
             {memory.tags.map((t) => <ChipView key={t} label={t} small />)}
           </div>
         </div>
-      </div>
+      </motion.div>
     </Link>
   );
 }

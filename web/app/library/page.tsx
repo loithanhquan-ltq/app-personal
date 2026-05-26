@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAppStore } from "@/store/useAppStore";
 import { useRouter } from "next/navigation";
 import { ANNIVERSARY_IDS } from "@/data";
@@ -15,6 +16,33 @@ import type { Memory } from "@/data/types";
 
 const MAX_W = 1100;
 const PAD = 36;
+
+const HEARTS = [
+  { left: "8%",  delay: 0,   dur: 7,   size: 11 },
+  { left: "22%", delay: 1.8, dur: 8.5, size: 8  },
+  { left: "38%", delay: 0.6, dur: 6.5, size: 13 },
+  { left: "55%", delay: 2.4, dur: 9,   size: 9  },
+  { left: "71%", delay: 1.1, dur: 7.5, size: 10 },
+  { left: "87%", delay: 3.0, dur: 8,   size: 12 },
+];
+
+function FloatingHearts() {
+  const reduced = useReducedMotion();
+  if (reduced) return null;
+  return (
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+      {HEARTS.map((h, i) => (
+        <motion.span
+          key={i}
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: -80, opacity: [0, 0.22, 0.22, 0] }}
+          transition={{ duration: h.dur, delay: h.delay, repeat: Infinity, ease: "easeOut" }}
+          style={{ position: "absolute", left: h.left, bottom: 0, fontSize: h.size, color: "var(--color-accent)", display: "block" }}
+        >♡</motion.span>
+      ))}
+    </div>
+  );
+}
 
 function AnniversaryCard({ memory: m }: { memory: Memory }) {
   const [hovered, setHovered] = useState(false);
@@ -59,7 +87,7 @@ function AnniversaryCard({ memory: m }: { memory: Memory }) {
   );
 }
 
-function useCountUp(target: number, duration = 1400) {
+function useCountUp(target: number, duration = 3000) {
   const [count, setCount] = useState(0);
   const raf = useRef<number>(0);
   useEffect(() => {
@@ -96,7 +124,13 @@ export default function LibraryPage() {
   return (
     <div className="page-root" style={{ maxWidth: MAX_W, margin: "0 auto", padding: `14px ${PAD}px 80px` }}>
       {/* Hero */}
-      <div style={{ marginBottom: 48 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+        style={{ marginBottom: 48, position: "relative" }}
+      >
+        <FloatingHearts />
         {/* Handwritten opening line */}
         <div style={{
           fontFamily: "var(--font-hand)",
@@ -149,7 +183,7 @@ export default function LibraryPage() {
 
         {/* Journey slider */}
         <JourneySlider yearCounts={yearCounts} animatedDays={animatedDays} totalDays={days} />
-      </div>
+      </motion.div>
 
       {/* Where it began */}
       {dayOne && (

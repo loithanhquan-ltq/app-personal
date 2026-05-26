@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useAppStore } from "@/store/useAppStore";
 import { chapter } from "@/data";
 import { MemoryWideCard } from "@/components/shared/MemoryWideCard";
@@ -10,6 +12,11 @@ export default function TimelinePage() {
   const content = useAppStore((s) => s.content);
   const filterChapter = useAppStore((s) => s.filterChapter);
   const s = content.strings;
+  const [currentYear, setCurrentYear] = useState(0);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   const filtered = filterChapter
     ? content.memories.filter((m) => m.chapterId === filterChapter)
@@ -56,8 +63,18 @@ export default function TimelinePage() {
               color: "var(--color-ink3)",
               textTransform: "uppercase",
               flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
             }}>
               {s.yearLabel} {year}
+              {currentYear === year && (
+                <motion.span
+                  animate={{ opacity: [1, 0.25, 1] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ fontSize: 8, color: "var(--color-accent)", display: "inline-block" }}
+                >●</motion.span>
+              )}
             </span>
             <div style={{ flex: 1, height: 1, background: "var(--color-rule)" }} />
           </div>

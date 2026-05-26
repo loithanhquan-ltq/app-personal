@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAppStore } from "@/store/useAppStore";
 import { StripedPlaceholder } from "./StripedPlaceholder";
 
@@ -9,11 +10,13 @@ export function PhotoSlot({
   height = 220,
   borderRadius = 10,
   width = 400,
+  kenBurns = false,
 }: {
   slotId: string;
   height?: number;
   borderRadius?: number;
   width?: number;
+  kenBurns?: boolean;
 }) {
   const photos = useAppStore((s) => s.photos);
   const uploadingSlots = useAppStore((s) => s.uploadingSlots);
@@ -23,6 +26,7 @@ export function PhotoSlot({
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const reduced = useReducedMotion();
 
   const photoUrl = photos[slotId];
   const isUploading = uploadingSlots.includes(slotId);
@@ -57,12 +61,23 @@ export function PhotoSlot({
       }}
     >
       {photoUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={photoUrl}
-          alt=""
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-        />
+        kenBurns && !reduced ? (
+          <motion.img
+            src={photoUrl}
+            alt=""
+            initial={{ scale: 1.07 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 9, ease: "easeOut" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoUrl}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+        )
       ) : (
         <StripedPlaceholder slotId={slotId} width={width} height={height} borderRadius={0} />
       )}

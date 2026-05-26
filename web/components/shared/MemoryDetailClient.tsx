@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppStore } from "@/store/useAppStore";
@@ -17,6 +18,8 @@ export function MemoryDetailClient({ id }: { id: string }) {
   const toggleFavorite = useAppStore((s) => s.toggleFavorite);
   const githubToken = useAppStore((s) => s.githubToken);
   const s = content.strings;
+  const reduced = useReducedMotion();
+  const [bursting, setBursting] = useState(false);
 
   const mem = findMemory(content, id);
 
@@ -70,7 +73,7 @@ export function MemoryDetailClient({ id }: { id: string }) {
 
       {/* Cinematic hero */}
       <div className="detail-hero" style={{ position: "relative", marginTop: 16, marginBottom: 0, borderRadius: 16, overflow: "hidden", minHeight: 480 }}>
-        <PhotoSlot slotId={`hero-${mem.id}`} height={480} borderRadius={0} width={760} />
+        <PhotoSlot slotId={`hero-${mem.id}`} height={480} borderRadius={0} width={760} kenBurns />
         {/* gradient overlay — title floats over bottom */}
         <div style={{
           position: "absolute", inset: 0,
@@ -100,12 +103,46 @@ export function MemoryDetailClient({ id }: { id: string }) {
               Edit
             </Link>
           )}
-          <button
-            onClick={() => toggleFavorite(mem.id)}
-            style={{ background: "rgba(0,0,0,0.38)", backdropFilter: "blur(4px)", border: "none", cursor: "pointer", fontSize: 22, color: fav ? "#f87171" : "rgba(255,255,255,0.75)", borderRadius: 8, padding: "4px 8px", lineHeight: 1 }}
-          >
-            {fav ? "♥" : "♡"}
-          </button>
+          <div style={{ position: "relative" }}>
+            <AnimatePresence>
+              {bursting && !reduced && Array.from({ length: 8 }, (_, i) => {
+                const angle = (i / 8) * Math.PI * 2;
+                return (
+                  <motion.span
+                    key={i}
+                    initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                    animate={{ x: Math.cos(angle) * 48, y: Math.sin(angle) * 48, opacity: 0, scale: 0.5 }}
+                    exit={{}}
+                    transition={{ duration: 0.65, ease: "easeOut" }}
+                    style={{ position: "absolute", top: "50%", left: "50%", fontSize: 12, color: "#f87171", pointerEvents: "none", marginLeft: -6, marginTop: -6 }}
+                  >♥</motion.span>
+                );
+              })}
+            </AnimatePresence>
+            <motion.button
+              onClick={() => {
+                const becomingFav = !fav;
+                toggleFavorite(mem.id);
+                if (becomingFav && !reduced) { setBursting(true); setTimeout(() => setBursting(false), 800); }
+              }}
+              whileTap={{ scale: 0.82 }}
+              transition={{ type: "spring", stiffness: 500, damping: 18 }}
+              style={{ background: "rgba(0,0,0,0.38)", backdropFilter: "blur(4px)", border: "none", cursor: "pointer", borderRadius: 8, padding: "4px 10px", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", minWidth: 36 }}
+            >
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={fav ? "fav" : "notfav"}
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.4, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 480, damping: 20 }}
+                  style={{ display: "block", fontSize: 22, color: fav ? "#f87171" : "rgba(255,255,255,0.75)", lineHeight: 1 }}
+                >
+                  {fav ? "♥" : "♡"}
+                </motion.span>
+              </AnimatePresence>
+            </motion.button>
+          </div>
         </div>
       </div>
 
