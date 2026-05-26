@@ -156,6 +156,7 @@ export const vietnamese: Content = {
     sectionReflections: "Nhìn lại",
     sideStats: "Tổng kết năm",
     sideAnniversaryCard: "Thiệp kỷ niệm",
+    sideAnniversary: "Kỷ niệm",
 
     statsHeadline: "Câu chuyện của mình qua con số",
     statsEyebrow: "Tổng kết năm",

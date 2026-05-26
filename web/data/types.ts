@@ -130,6 +130,7 @@ export interface Strings {
   sectionReflections: string;
   sideStats: string;
   sideAnniversaryCard: string;
+  sideAnniversary: string;
 
   statsHeadline: string;
   statsEyebrow: string;

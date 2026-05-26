@@ -157,6 +157,7 @@ export const english: Content = {
     sectionReflections: "Reflections",
     sideStats: "Year in review",
     sideAnniversaryCard: "Anniversary card",
+    sideAnniversary: "Anniversary",
 
     statsHeadline: "Our story in numbers",
     statsEyebrow: "A year in review",

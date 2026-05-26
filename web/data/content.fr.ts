@@ -156,6 +156,7 @@ export const french: Content = {
     sectionReflections: "Réflexions",
     sideStats: "Bilan annuel",
     sideAnniversaryCard: "Carte d'anniversaire",
+    sideAnniversary: "Anniversaire",
 
     statsHeadline: "Notre histoire en chiffres",
     statsEyebrow: "Un bilan annuel",
