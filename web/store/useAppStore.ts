@@ -162,7 +162,10 @@ export const useAppStore = create<AppStore>()(
         try {
           const blob = await compressToJpeg(file);
           await upload(slotId, blob, githubToken);
+          // Switch from blob URL to permanent GitHub URL so it survives reload
+          const permanentUrl = rawURL(slotId);
           set((s) => ({
+            photos: { ...s.photos, [slotId]: permanentUrl },
             uploadingSlots: s.uploadingSlots.filter((x) => x !== slotId),
             uploadErrors: Object.fromEntries(Object.entries(s.uploadErrors).filter(([k]) => k !== slotId)),
           }));
@@ -278,6 +281,11 @@ export const useAppStore = create<AppStore>()(
         language: s.language,
         userFavorites: s.userFavorites,
         githubToken: s.githubToken,
+        // Persist permanent GitHub URLs so photos survive reload.
+        // Exclude blob: URLs — they're only valid for the current session.
+        photos: Object.fromEntries(
+          Object.entries(s.photos).filter(([, v]) => !v.startsWith("blob:"))
+        ),
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

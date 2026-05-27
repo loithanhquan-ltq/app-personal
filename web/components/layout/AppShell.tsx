@@ -20,8 +20,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const introDismissed = useAppStore((s) => s.introDismissed);
 
   useEffect(() => {
-    syncRemotePhotos();
-    syncUserMemories();
+    // syncUserMemories must complete first so user memory photo slots
+    // (hero-um-xxx) are in content.memories before syncRemotePhotos builds
+    // its slotIds list. Running them in parallel was causing user memory
+    // photos to be skipped on every reload.
+    syncUserMemories().then(() => syncRemotePhotos());
     syncReactions();
   }, [syncRemotePhotos, syncUserMemories, syncReactions]);
 
