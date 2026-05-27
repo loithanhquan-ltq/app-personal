@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:app-personal}",
+            "name": "Debug Memories",
+            "target": "Memories",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug Memories"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:app-personal}",
+            "name": "Release Memories",
+            "target": "Memories",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release Memories"
+        }
+    ]
+}

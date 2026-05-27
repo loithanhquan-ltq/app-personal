@@ -245,14 +245,16 @@ export function CSSBookFlip({
               letterSpacing: "0.15em",
               textTransform: "uppercase",
               cursor: "pointer",
-              padding: "8px 0",
+              padding: "12px 8px",
               flexShrink: 0,
               transition: "color 0.2s",
+              minHeight: 44,
+              minWidth: 64,
             }}
             onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.65)")}
             onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.28)")}
           >
-            Skip · Esc
+            Skip<span className="esc-hint"> · Esc</span>
           </button>
         </div>
       </div>

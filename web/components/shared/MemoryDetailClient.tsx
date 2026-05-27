@@ -63,7 +63,7 @@ export function MemoryDetailClient({ id }: { id: string }) {
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", paddingBottom: 80 }}>
       {/* Back link */}
-      <div style={{ padding: "20px 36px 0" }}>
+      <div className="detail-back" style={{ padding: "20px 36px 0" }}>
         <Link href="/timeline" style={{
           display: "inline-flex", alignItems: "center", gap: 5,
           fontFamily: "var(--font-sans)", fontSize: 13, color: "var(--color-ink3)",

@@ -9,6 +9,7 @@ import { TokenSetupModal } from "@/components/github/TokenSetupModal";
 import { DedicationOverlay } from "./DedicationOverlay";
 import { PageTransition } from "./PageTransition";
 import { BookIntro } from "@/components/intro/BookIntro";
+import { MobileBottomNav } from "./MobileBottomNav";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const syncRemotePhotos = useAppStore((s) => s.syncRemotePhotos);
@@ -40,7 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <TopBar />
-        <main style={{ flex: 1, overflowY: "auto", position: "relative" }}>
+        <main className="main-scroll" style={{ flex: 1, overflowY: "auto", position: "relative" }}>
           <PageTransition>{children}</PageTransition>
         </main>
       </div>
@@ -48,6 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <TokenSetupModal />
       {!introDismissed && <BookIntro />}
       {introDismissed && <DedicationOverlay />}
+      <MobileBottomNav />
     </div>
   );
 }

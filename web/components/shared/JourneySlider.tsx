@@ -73,17 +73,17 @@ export function JourneySlider({ yearCounts: _yearCounts, animatedDays, totalDays
       {/* Bookend dates */}
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 7 }}>
         <span style={{
-          fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.06em",
+          fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.06em",
           color: "var(--color-accent)", opacity: 0.6,
         }}>Jun 9, 2022</span>
         <span style={{
-          fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.06em",
+          fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.06em",
           color: "var(--color-ink3)", opacity: 0.4,
         }}>Jun 9, 2026</span>
       </div>
 
       {/* Year links — flex row, evenly spaced */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
         {YEARS.map((year) => {
           const isCurrent = currentYear > 0 && year === currentYear;
           const isFuture  = currentYear > 0 && year > currentYear;
@@ -99,9 +99,13 @@ export function JourneySlider({ yearCounts: _yearCounts, animatedDays, totalDays
                 whileTap={{ scale: 0.96 }}
                 transition={{ type: "spring", stiffness: 500, damping: 28 }}
                 style={{
-                  display: "block",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 36,
+                  padding: "4px 2px",
                   fontFamily: "var(--font-mono)",
-                  fontSize: 9,
+                  fontSize: 11,
                   letterSpacing: "0.06em",
                   whiteSpace: "nowrap",
                   color: isCurrent ? "var(--color-accent)" : isFuture ? "var(--color-ink3)" : "var(--color-ink2)",

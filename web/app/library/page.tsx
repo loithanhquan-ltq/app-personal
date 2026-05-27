@@ -162,7 +162,7 @@ export default function LibraryPage() {
         <div style={{ display: "flex", alignItems: "baseline", gap: 0, flexWrap: "wrap", marginBottom: 12 }}>
           <span style={{
             fontFamily: "var(--font-serif)",
-            fontSize: 64,
+            fontSize: "clamp(40px, 14vw, 64px)",
             fontStyle: "italic",
             fontWeight: 600,
             color: "var(--color-accent)",
@@ -173,7 +173,7 @@ export default function LibraryPage() {
           </span>
           <span style={{
             fontFamily: "var(--font-serif)",
-            fontSize: 64,
+            fontSize: "clamp(40px, 14vw, 64px)",
             fontStyle: "italic",
             fontWeight: 400,
             color: "var(--color-ink)",
