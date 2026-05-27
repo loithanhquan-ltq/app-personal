@@ -22,6 +22,7 @@ interface AppStore {
   uploadErrors: Record<string, string>;
   userMemories: Memory[];
   reactions: ReactionMap;
+  introDismissed: boolean;
 
   setLanguage: (l: Language) => void;
   syncUserMemories: () => Promise<void>;
@@ -41,6 +42,7 @@ interface AppStore {
   syncRemotePhotos: () => Promise<void>;
   syncReactions: () => Promise<void>;
   addReaction: (memId: string, emoji: string) => Promise<void>;
+  dismissIntro: () => void;
 }
 
 function mergeMemories(base: Memory[], user: Memory[]): Memory[] {
@@ -64,6 +66,7 @@ export const useAppStore = create<AppStore>()(
       uploadErrors: {},
       userMemories: [],
       reactions: {},
+      introDismissed: false,
 
       setLanguage: (l) => {
         const userMems = get().userMemories;
@@ -204,6 +207,7 @@ export const useAppStore = create<AppStore>()(
       setFilterChapter: (id) => set({ filterChapter: id }),
       setQuery: (q) => set({ query: q }),
       setShowGitHubSetup: (show) => set({ showGitHubSetup: show }),
+      dismissIntro: () => set({ introDismissed: true }),
 
       syncRemotePhotos: async () => {
         const { content } = get();

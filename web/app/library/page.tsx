@@ -29,7 +29,9 @@ const HEARTS = [
 
 function FloatingHearts() {
   const reduced = useReducedMotion();
-  if (reduced) return null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted || reduced) return null;
   return (
     <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
       {HEARTS.map((h, i) => (

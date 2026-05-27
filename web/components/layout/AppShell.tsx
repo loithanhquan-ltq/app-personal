@@ -8,6 +8,7 @@ import { Toast } from "./Toast";
 import { TokenSetupModal } from "@/components/github/TokenSetupModal";
 import { DedicationOverlay } from "./DedicationOverlay";
 import { PageTransition } from "./PageTransition";
+import { BookIntro } from "@/components/intro/BookIntro";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const syncRemotePhotos = useAppStore((s) => s.syncRemotePhotos);
@@ -15,6 +16,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const syncReactions = useAppStore((s) => s.syncReactions);
   const setLanguage = useAppStore((s) => s.setLanguage);
   const language = useAppStore((s) => s.language);
+  const introDismissed = useAppStore((s) => s.introDismissed);
 
   useEffect(() => {
     syncRemotePhotos();
@@ -45,6 +47,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Toast />
       <TokenSetupModal />
       <DedicationOverlay />
+      {!introDismissed && <BookIntro />}
     </div>
   );
 }
