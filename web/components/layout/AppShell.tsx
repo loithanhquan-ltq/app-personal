@@ -46,8 +46,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <Toast />
       <TokenSetupModal />
-      <DedicationOverlay />
       {!introDismissed && <BookIntro />}
+      {introDismissed && <DedicationOverlay />}
     </div>
   );
 }
