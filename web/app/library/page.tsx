@@ -116,7 +116,7 @@ export default function LibraryPage() {
   const days = daysSinceStart();
   const animatedDays = useCountUp(days);
 
-  const dayOne = content.memories.find((m) => m.id === "m01");
+  const dayOne = [...content.memories].sort((a, b) => a.sortKey.localeCompare(b.sortKey))[0];
   const anniversaries = ANNIVERSARY_IDS.map((id) => content.memories.find((m) => m.id === id)).filter(Boolean) as typeof content.memories;
   const favMems = content.memories.filter((m) => m.favorite || userFavorites.includes(m.id));
   const recent = [...content.memories].sort((a, b) => b.sortKey.localeCompare(a.sortKey)).slice(0, 9);
