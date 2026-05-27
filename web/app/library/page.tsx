@@ -205,7 +205,7 @@ export default function LibraryPage() {
               gap: 0,
             }} className="hero-stack">
               <div className="hero-photo" style={{ flex: "0 0 300px", height: 220 }}>
-                <PhotoSlot slotId="hero-m01" height={220} borderRadius={0} width={300} />
+                <PhotoSlot slotId={`hero-${dayOne.id}`} height={220} borderRadius={0} width={300} />
               </div>
               <div style={{ flex: 1, padding: "28px 32px" }}>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 500, color: "var(--color-ink3)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
