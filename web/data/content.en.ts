@@ -36,7 +36,7 @@ export const english: Content = {
     wordmark: "Us",
     sectionLibrary: "Library", sectionChapters: "Chapters", sectionAtlas: "Atlas", sectionPeople: "People",
     sideAll: "All memories", sideToday: "Today", sideLetters: "Letters", sideFavorites: "Favorites",
-    sidePlaces: "Places we've been", sideEveryone: "You & the cast",
+    sidePlaces: "Places we've been", sideEveryone: "Em ❤️✨",
     footerDays: "days", footerSince: "since 9 June 2022",
     tabLibrary: "Library", tabTimeline: "Timeline", tabLetters: "Letters", tabAtlas: "Atlas", tabPeople: "People",
     searchPlaceholder: "Search memories", newMemory: "New memory",
@@ -103,10 +103,10 @@ export const english: Content = {
     { id: "now",       label: "Settling In", span: "Jun 2025 – Now",      hue: 220 },
   ],
   people: [
-    { id: "you",     name: "You",              role: "the one this is for", initials: "♥" },
-    { id: "yourmom", name: "Your mom",          role: "family",             initials: "YM" },
-    { id: "yourdad", name: "Your dad",          role: "family",             initials: "YD" },
-    { id: "friend",  name: "My oldest friend",  role: "witness",            initials: "OF" },
+    { id: "you",     name: "Em ❤️✨",              role: "the one this is for", initials: "♥" },
+    // { id: "yourmom", name: "Your mom",          role: "family",             initials: "YM" },
+    // { id: "yourdad", name: "Your dad",          role: "family",             initials: "YD" },
+    // { id: "friend",  name: "My oldest friend",  role: "witness",            initials: "OF" },
   ],
   places: [
     { id: "home",    label: "Ho Chi Minh City", country: "where it all began", lat: 10.78, lng: 106.70 },
