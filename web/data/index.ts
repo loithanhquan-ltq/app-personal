@@ -61,4 +61,4 @@ export function searchMemories(content: Content, query: string): Memory[] {
   );
 }
 
-export const ANNIVERSARY_IDS = ["m01", "m10", "m14", "m17"];
+export const ANNIVERSARY_IDS: string[] = [];
