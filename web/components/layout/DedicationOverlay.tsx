@@ -2,27 +2,19 @@
 
 import { useState, useEffect } from "react";
 
-const STORAGE_KEY = "memories-visited";
-
 export function DedicationOverlay() {
   const [visible, setVisible] = useState(false);
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!localStorage.getItem(STORAGE_KEY)) {
-      setVisible(true);
-      const timer = setTimeout(() => dismiss(), 3800);
-      return () => clearTimeout(timer);
-    }
+    setVisible(true);
+    const timer = setTimeout(() => dismiss(), 3800);
+    return () => clearTimeout(timer);
   }, []);
 
   function dismiss() {
     setFading(true);
-    setTimeout(() => {
-      setVisible(false);
-      localStorage.setItem(STORAGE_KEY, "1");
-    }, 700);
+    setTimeout(() => setVisible(false), 700);
   }
 
   if (!visible) return null;
